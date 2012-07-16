@@ -16,7 +16,8 @@
 # Imports {{{1
 import re
 from textwrap import wrap, fill, dedent
-from actions import actionsToUse as actions, Constant, documentComplexNumbers
+from actions import actionsToUse as actions, Constant, date, version, \
+    documentIntegers, documentVerilogIntegers, documentComplexNumbers
 
 # Globals {{{1
 italicsRegex = re.compile(r'#\{([^}]+)\}')
@@ -25,7 +26,7 @@ document = []
 
 # Classes {{{1
 # ManPage base class {{{2
-class ManPage():
+class ManPage:
     '''
     Base class for man page objects. Do not instantiate this class directly.
     '''
@@ -91,7 +92,7 @@ class Title(ManPage):
     '''
     def __init__(self, title, section
         , date=None
-        , source=None
+        , version=None
         , manual=None
         , preprocessors=None
     ):
@@ -103,13 +104,21 @@ class Title(ManPage):
             date = Date.today()
         def quote(text):
             return '"%s"' % text
+        if version != None:
+            version = quote(version)
+        else:
+            version = ''
+        if manual != None:
+            manual = quote(manual)
+        else:
+            manual = ''
         document.append(
-            '.TH {title} {section} {date} {source} {manual}'.format(
-                title=title.upper()
-              , section=section
-              , date=quote(date)
-              , source=quote(source) if source else ''
-              , manual=quote(manual) if manual else ''
+            '.TH %s %s %s %s %s' % (
+                title.upper()
+              , section
+              , quote(date)
+              , version
+              , manual
             )
         )
 
@@ -127,12 +136,12 @@ class Comment(ManPage):
 # Section class {{{2
 class Section(ManPage):
     def __init__(self, title):
-        document.append('.SH {0}'.format(self.escapeQuotes(title.upper())))
+        document.append('.SH %s' % (self.escapeQuotes(title.upper())))
 
 # SubSection class {{{2
 class SubSection(ManPage):
     def __init__(self, title):
-        document.append('.SS {0}'.format(self.escapeQuotes(title)))
+        document.append('.SS %s' % (self.escapeQuotes(title)))
 
 # Text class {{{2
 class Text(ManPage):
@@ -149,7 +158,7 @@ class Paragraph(ManPage):
 class IndentedParagraph(ManPage):
     def __init__(self, title, text):
         if title:
-            document.append('.IP "{0}"'.format(
+            document.append('.IP "%s"' % (
                 self.formatText(self.escapeQuotes(title))
             ))
         else:
@@ -175,14 +184,15 @@ class Table(ManPage):
 # Email class {{{2
 class Email(ManPage):
     def __init__(self, text):
-        document.append('.BR "{0}"'.format(self.formatText(text)))
+        document.append('.BR "%s"' % (self.formatText(text)))
 
 # Document {{{1
 # Front matter {{{2
 Title(
     title='ec'
   , section='1'
-  , source='Ken Kundert'
+  , date=date
+  , version=version
   , manual='Engineering Calculator'
   , preprocessors='t'
 )
@@ -432,42 +442,78 @@ Paragraph('''
     u, n, p, f, a).
 ''')
 # Integers {{{2
-Section('Integers')
-Paragraph('''
-    You can enter integers in either hexadecimal (base 16), decimal (base 10), 
-    octal (base 8), or binary (base 2). You can use either programmers notation
-    (leading 0) or Verilog notation (leading ') as shown in the examples below:
-''')
-Table('''
-    tab(;);
-    lrl.
-    ;0xFF;hexadecimal
-    ;99;decimal
-    ;0o77;octal
-    ;0b1101;binary
-    ;'hFF;Verilog hexadecimal
-    ;'d99;Verilog decimal
-    ;'o77;Verilog octal
-    ;'b1101;Verilog binary
-''')
-Paragraph('''
-    Internally, @{ec} represents all numbers as double-precision real numbers.
-    To display them as decimal integers, use #{fix0}. However, you can display
-    the numbers in either base 16 (hexadecimal), base 10 (decimal), base 8
-    (octal) or base 2 (binary)  by setting the display mode.  Use either #{hex},
-    #{fix0}, #{oct}, #{bin}, #{vhex}, #{vdec}, #{voct}, or #{vbin}. In each of
-    these cases the number is rounded to the closest integer before it is
-    displayed. Add an integer after the display mode to control the number of
-    digits. For example:
-''')
-Listing('''
-    @{0}: 1000
-    @{1K}: hex
-    @{0x3b8}: hex8
-    @{0x000003b8}: hex0
-    @{0x3b8}: voct
-    @{'o1750}:
-''')
+if documentIntegers:
+    if documentVerilogIntegers:
+        Section('Integers')
+        Paragraph('''
+            You can enter integers in either hexadecimal (base 16), decimal
+            (base 10), octal (base 8), or binary (base 2). You can use either
+            programmers notation (leading 0) or Verilog notation (leading ') as
+            shown in the examples below:
+        ''')
+        Table('''
+            tab(;);
+            lrl.
+            ;0xFF;hexadecimal
+            ;99;decimal
+            ;0o77;octal
+            ;0b1101;binary
+            ;'hFF;Verilog hexadecimal
+            ;'d99;Verilog decimal
+            ;'o77;Verilog octal
+            ;'b1101;Verilog binary
+        ''')
+        Paragraph('''
+            Internally, @{ec} represents all numbers as double-precision real
+            numbers.  To display them as decimal integers, use #{fix0}. However,
+            you can display the numbers in either base 16 (hexadecimal), base 10
+            (decimal), base 8 (octal) or base 2 (binary)  by setting the display
+            mode.  Use either #{hex}, #{fix0}, #{oct}, #{bin}, #{vhex}, #{vdec},
+            #{voct}, or #{vbin}. In each of these cases the number is rounded to
+            the closest integer before it is displayed. Add an integer after the
+            display mode to control the number of digits. For example:
+        ''')
+        Listing('''
+            @{0}: 1000
+            @{1K}: hex
+            @{0x3b8}: hex8
+            @{0x000003b8}: hex0
+            @{0x3b8}: voct
+            @{'o1750}:
+        ''')
+    else:
+        Section('Integers')
+        Paragraph('''
+            You can enter integers in either hexadecimal (base 16), decimal
+            (base 10), octal (base 8), or binary (base 2) as shown in the
+            examples below:
+        ''')
+        Table('''
+            tab(;);
+            lrl.
+            ;0xFF;hexadecimal
+            ;99;decimal
+            ;0o77;octal
+            ;0b1101;binary
+        ''')
+        Paragraph('''
+            Internally, @{ec} represents all numbers as double-precision real
+            numbers.  To display them as decimal integers, use #{fix0}. However,
+            you can display the numbers in either base 16 (hexadecimal), base 10
+            (decimal), base 8 (octal) or base 2 (binary)  by setting the display
+            mode.  Use either #{hex}, #{fix0}, #{oct}, or #{bin}. In each of
+            these cases the number is rounded to the closest integer before it
+            is displayed. Add an integer after the display mode to control the
+            number of digits. For example:
+        ''')
+        Listing('''
+            @{0}: 1000
+            @{1K}: hex
+            @{0x3b8}: hex8
+            @{0x000003b8}: hex0
+            @{0x3b8}:
+        ''')
+
 # Complex Numbers {{{2
 if documentComplexNumbers:
     Section('Complex Numbers')
@@ -585,7 +631,7 @@ Paragraph('''
     represent "fix" or "fix4", but not "fixN".
 ''')
 for action in actions:
-    if action.description:
+    if action and action.description:
         if hasattr(action, 'category'):
             SubSection(action.description % (action.__dict__))
         else:
@@ -781,7 +827,8 @@ Paragraph('bc, dc')
 
 # Print the document {{{2
 try:
-    with open('ec.1', 'w') as fp:
-        fp.write('\n'.join(document) + '\n')
+    fp = open('ec.1', 'w')
+    fp.write('\n'.join(document) + '\n')
+    fp.close()
 except (IOError, OSError), err:
     exit("%s: %s." % (err.filename, err.strerror))

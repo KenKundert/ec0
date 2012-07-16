@@ -1,4 +1,6 @@
 *.py[co]
+ec.1
+.*.sum
 
 # Packages
 *.egg
@@ -19,7 +21,6 @@ pip-log.txt
 # Unit test / coverage reports
 .coverage
 .tox
-.*.sum
 
 #Translations
 *.mo

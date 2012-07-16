@@ -1822,4 +1822,31 @@ predefinedVariables = {'Rref': (50, 'Ohms')}
 # default behavior.
 defaultFormat = setEngineeringFormat
 defaultDigits = 4
-documentComplexNumbers = True
+
+# The following variables control the generation of the documentation (the man
+# page).
+documentComplexNumbers = (
+    imaginaryUnit in actionsToUse or
+    imaginaryTwoPi in actionsToUse
+)
+documentVerilogIntegers = (
+    verilogHexadecimalNumber or
+    verilogDecimalNumber or
+    verilogOctalNumber or
+    verilogBinaryNumber or
+    setVerilogHexadecimalFormat or
+    setVerilogDecimalFormat or
+    setVerilogOctalFormat or
+    setVerilogBinaryFormat
+)
+documentIntegers = (
+    documentVerilogIntegers or
+    hexadecimalNumber or
+    octalNumber or
+    binaryNumber or
+    setHexadecimalFormat or
+    setOctalFormat or
+    setBinaryFormat
+)
+date = None # if this is set to none, the date that ./install is run is used
+version = '1.0.0'

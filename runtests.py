@@ -108,24 +108,25 @@ def writeSummary(tests, testFailures, suites = 1, suiteFailures = None):
     """
     # name becomes program names as invoked with .py stripped off
     if progName[-3:] != '.py':
-	name = progName
+        name = progName
     else:
-	name = progName[0:-3]
+        name = progName[0:-3]
     if suiteFailures == None and suites == 1:
         if testFailures:
-	    suiteFailures = 1
-	else:
+            suiteFailures = 1
+        else:
             suiteFailures = 0
     assert tests >= testFailures
     assert suites >= suiteFailures
     try:
-	f = open('.%s.sum' % name, 'w')
-	dumpSummary({
-	    'tests': tests
-	  , 'testFailures': testFailures
-	  , 'suites': suites
-	  , 'suiteFailures': suiteFailures
-	}, f)
+        f = open('.%s.sum' % name, 'w')
+        dumpSummary({
+            'tests': tests
+          , 'testFailures': testFailures
+          , 'suites': suites
+          , 'suiteFailures': suiteFailures
+        }, f)
+        f.close()
     except IOError, err:
         sys.exit(
             exception(
@@ -177,9 +178,9 @@ def runTests(tests, pythonCmd=None, pythonPath=None, testKey='test'):
     numSuiteFailures = 0
     for test in args:
         if parent:
-	    name = '%s/%s' % (parent, test)
-	else:
-	    name = test
+            name = '%s/%s' % (parent, test)
+        else:
+            name = test
         if os.path.isdir(test):
             summaryFileName = './%s/.%s.sum' % (test, testKey)
             _deleteYamlFile(summaryFileName)
@@ -211,11 +212,12 @@ def runTests(tests, pythonCmd=None, pythonPath=None, testKey='test'):
                 failures = True
         try:
             f = open(summaryFileName)
-	    results = loadSummary(f)
-	    numTests += results['tests']
-	    numTestFailures += results['testFailures']
-	    numSuites += results['suites']
-	    numSuiteFailures += results['suiteFailures']
+            results = loadSummary(f)
+            numTests += results['tests']
+            numTestFailures += results['testFailures']
+            numSuites += results['suites']
+            numSuiteFailures += results['suiteFailures']
+            f.close()
         except KeyError:
             sys.exit(
                     exception(
@@ -274,10 +276,10 @@ def _invoke(cmd):
     try:
         return os.system(cmd)
     except OSError, err:
-	if err.filename:
-	    filename = "%s: " % (err.filename)
-	else:
-	    filename = ''
+        if err.filename:
+            filename = "%s: " % (err.filename)
+        else:
+            filename = ''
         sys.exit(
             exception(
                 '\n'.join([
