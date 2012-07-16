@@ -169,7 +169,7 @@ class Heap:
         """
         for key in sorted(self.heap.keys()):
             self.parent.printMessage(
-                '  %s: %s' % (key, calc.format(self.heap[key]))
+                '  %s: %s' % (key, self.parent.format(self.heap[key]))
             )
 
     def __getitem__(self, key):
@@ -383,7 +383,7 @@ class Command(Action):
         self.summary = summary
         self.aliases = aliases
 
-    def execute(self, calc):
+    def _execute(self, calc):
         self.action(calc)
 
 # Constant (pop 0, push 1, match name) {{{2
@@ -434,7 +434,7 @@ class Constant(Action):
         self.summary = summary
         self.aliases = aliases
 
-    def execute(self, calc):
+    def _execute(self, calc):
         stack = calc.stack
         result = self.action()
         stack.push((result, self.units))
@@ -492,7 +492,7 @@ class UnaryOp(Action):
         self.summary = summary
         self.aliases = aliases
 
-    def execute(self, calc):
+    def _execute(self, calc):
         stack = calc.stack
         x, xUnits = stack.pop()
         if self.needCalc:
@@ -558,7 +558,7 @@ class BinaryOp(Action):
         self.summary = summary
         self.aliases = aliases
 
-    def execute(self, calc):
+    def _execute(self, calc):
         stack = calc.stack
         x, xUnits = stack.pop()
         y, yUnits = stack.pop()
@@ -633,7 +633,7 @@ class BinaryIoOp(Action):
         self.summary = summary
         self.aliases = aliases
 
-    def execute(self, calc):
+    def _execute(self, calc):
         stack = calc.stack
         x, xUnits = stack.pop()
         y, yUnits = stack.pop()
@@ -707,7 +707,7 @@ class Dup(Action):
         self.summary = summary
         self.aliases = aliases
 
-    def execute(self, calc):
+    def _execute(self, calc):
         stack = calc.stack
         x, xUnits = stack.peek()
         if self.action:
@@ -772,7 +772,7 @@ class Number(Action):
         self.summary = summary
         self.regex = re.compile(pattern)
 
-    def execute(self, matchGroups, calc):
+    def _execute(self, matchGroups, calc):
         if self.needCalc:
             num, units = self.action(matchGroups, calc)
         else:
@@ -835,7 +835,7 @@ class SetFormat(Action):
         self.summary = summary
         self.regex = re.compile(pattern)
 
-    def execute(self, matchGroups, calc):
+    def _execute(self, matchGroups, calc):
         calc.formatter.setFormatter(self)
         if matchGroups and matchGroups[0] != None:
             calc.formatter.setDigits(int(matchGroups[0]))
@@ -868,7 +868,7 @@ class Help(Action):
         self.summary = summary
         self.regex = re.compile(r'\?(\S+)?')
 
-    def execute(self, matchGroups, calc):
+    def _execute(self, matchGroups, calc):
         topic = matchGroups[0]
 
         # give detailed help on a particular topic
@@ -887,8 +887,11 @@ class Help(Action):
                     else:
                         aliases = ''
                     if action.description:
-                        print stripFormatting(
-                            action.description % (action.__dict__)
+                        print fill(
+                            stripFormatting(
+                                action.description % (action.__dict__)
+                            )
+                          , subsequent_indent='    '
                         )
                     else:
                         print found + ':'
@@ -898,7 +901,7 @@ class Help(Action):
                     if synopsis or aliases:
                         print
                     if synopsis:
-                        print 'synopsis: %s' % synopsis
+                        print 'stack: %s' % synopsis
                     if aliases:
                         print aliases
                     return
@@ -975,13 +978,14 @@ class Store(Action):
     summary (optional):
         The summary is a complete description of the action.
     """
-    def __init__(self, name, description = None, summary = None):
+    def __init__(self, name, description = None, synopsis = None, summary = None):
         self.name = name
         self.description = description
+        self.synopsis = synopsis
         self.summary = summary
         self.regex = re.compile(r'=([a-z]\w*)', re.I)
 
-    def execute(self, matchGroups, calc):
+    def _execute(self, matchGroups, calc):
         name = matchGroups[0]
         try:
             calc.heap[name] = calc.stack.peek()
@@ -1010,13 +1014,14 @@ class Recall(Action):
     summary (optional):
         The summary is a complete description of the action.
     """
-    def __init__(self, name, description = None, summary = None):
+    def __init__(self, name, description = None, synopsis = None, summary = None):
         self.name = name
         self.description = description
+        self.synopsis = synopsis
         self.summary = summary
         self.regex = re.compile(r'([a-z]\w*)', re.I)
 
-    def execute(self, matchGroups, calc):
+    def _execute(self, matchGroups, calc):
         name = matchGroups[0]
         if name in calc.heap:
             calc.stack.push(calc.heap[name])
@@ -1045,13 +1050,14 @@ class SetUnits(Action):
     summary (optional):
         The summary is a complete description of the action.
     """
-    def __init__(self, name, description = None, summary = None):
+    def __init__(self, name, description = None, synopsis = None, summary = None):
         self.name = name
         self.description = description
+        self.synopsis = synopsis
         self.summary = summary
         self.regex = re.compile(r'"(.*)"')
 
-    def execute(self, matchGroups, calc):
+    def _execute(self, matchGroups, calc):
         stack = calc.stack
         units, = matchGroups
         x, xUnits = stack.pop()
@@ -1085,7 +1091,7 @@ class Print(Action):
         self.regex = re.compile(r'`(.*)`')
         self.argsRegex = re.compile(r'\${?(\w+|\$)}?')
 
-    def execute(self, matchGroups, calc):
+    def _execute(self, matchGroups, calc):
         # Prints a message after expanding any $codes it contains
         # $N or ${N} are replaced by the contents of a stack register (0=x, ...)
         # $name or ${name} are replaced by the contents of a variable
@@ -1160,7 +1166,7 @@ class Calculator:
     # space. This allows certain operators to be given abutted to numbers
     operatorSplitRegex = re.compile('''
         (?<=[a-zA-Z0-9])    # alphanum before the split
-        (?=[-+*/%!](\s|\Z)) # selected operators followed by white space or EOL
+        (?=([-+*/%!]|\*\*|\|\||//)(\s|\Z)) # selected operators followed by white space or EOL: - + * / % ! ** || //
     ''', re.X)
     # strings are delimited by "" and `` (' is reserved for use with verilog
     # integer literals)
@@ -1279,12 +1285,12 @@ class Calculator:
         try:
             for cmd in given:
                 if cmd in self.smplActions:
-                    self.smplActions[cmd].execute(self)
+                    self.smplActions[cmd]._execute(self)
                 else:
                     for action in self.regexActions:
                         match = action.regex.match(cmd)
                         if match:
-                            action.execute(match.groups(), self)
+                            action._execute(match.groups(), self)
                             break
                     else:
                         raise CalculatorError("%s: unrecognized" % cmd)
@@ -1316,7 +1322,6 @@ class Calculator:
         Restore stack to its state before the last evaluate.
         Used for recovering from errors.
         '''
-        assert self.backUpStack and self.prevStack
         self.stack = self.prevStack
         return self.format(self.stack.peek())
 
@@ -1392,12 +1397,12 @@ class Calculator:
         Print a single line summary of all available actions.
         '''
         lines = []
-        for each in calc.actions:
-            if each.description:
-                if hasattr(each, 'category'):
-                    lines += ['\n' + each.description % (each.__dict__)]
+        for action in calc.actions:
+            if action.description:
+                if hasattr(action, 'category'):
+                    lines += ['\n' + action.description % (action.__dict__)]
                 else:
-                    aliases = each.getAliases()
+                    aliases = action.getAliases()
                     if aliases:
                         if len(aliases) > 1:
                             aliases = ' (aliases: %s)' % ','.join(aliases)
@@ -1407,7 +1412,7 @@ class Calculator:
                         aliases = ''
                     lines += wrap(
                         stripFormatting(
-                            each.description % (each.__dict__)
+                            action.description % (action.__dict__)
                         ) + aliases
                       , initial_indent='    '
                       , subsequent_indent='        '
