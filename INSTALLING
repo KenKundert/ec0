@@ -17,7 +17,11 @@ To download ec0, use either:
 Using git allows you to get updates using:
     $ git pull
 Alternatively, you can download the source as a tar or zip file by visiting
-https://github.com/KenKundert/ec0/downloads.
+https://github.com/KenKundert/ec0/downloads or by running:
+    $ wget --no-check-certificate https://github.com/KenKundert/ec0/tarball/master
+    $ tar zxf master
+    $ rm -rf master ec0
+    $ mv KenKundert-ec0-* ec0
 
 Once you have your copy of ec0, test it with
     $ ./test
