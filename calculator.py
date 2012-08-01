@@ -13,7 +13,10 @@ engfmt.setSpacer(' ')
 from copy import copy
 from textwrap import wrap, fill, dedent
 from pydoc import pager
+import warnings
+warnings.simplefilter("ignore") # suppress deprecation warnings
 from sets import Set as set, ImmutableSet as frozenset
+warnings.simplefilter("default")
 
 # Utility functions {{{1
 italicsRegex = re.compile(r'#\{(\w+)\}')
