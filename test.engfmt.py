@@ -5,7 +5,7 @@ import sys
 from engfmt import \
     fromEngFmt, toEngFmt, \
     toNumber, isNumber, stripUnits, \
-    allToEngFmt, allFromEngFmt 
+    allToEngFmt, allFromEngFmt
 from runtests import cmdLineOpts, writeSummary
 from textcolors import Colors
 
