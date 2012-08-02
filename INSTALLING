@@ -34,7 +34,7 @@ You can install it using
 It will install the program into ~/.local.  Both the program and a man page are 
 installed. You do not need root access to install into ~/.local, but in doing so 
 it is only easily accessible by you and you will need to add ~/.local/bin
-to your PATH. Alternatively, you can edit ./install and remove the '--prefix' 
+to your PATH. Alternatively, you can edit ./install and remove the '--user' 
 option.  That will cause EC to be installed so that it is accessible to all 
 users without having to change their PATH, but it requires that you be root when 
 you run the ./install command.
