@@ -13,7 +13,7 @@ ec0 is available from https://github.com/KenKundert/ec0.
 ec is available from https://github.com/KenKundert/ec.
 
 To download ec0, use either:
-    $ git clone git@github.com:KenKundert/ec0.git
+    $ git clone git://github.com/KenKundert/ec0.git
 Using git allows you to get updates using:
     $ git pull
 Alternatively, you can download the source as a tar or zip file by visiting
@@ -25,15 +25,19 @@ https://github.com/KenKundert/ec0/downloads or by running:
 
 Once you have your copy of ec0, test it with
     $ ./test
-All tests should pass. Then you can install it using
+Be aware that some features are not available with earlier versions of Python, 
+and as a result, several of the tests will fail. I hope to resolve this issue in 
+subsequent releases.
+
+You can install it using
     $ ./install
-It will install the program into ~/local unless you change the install script.  
-Both the program and a man page are installed. You do not need root access to 
-install into ~/local, but in doing so it is only easily accessible by you and 
-you will need to add ~/local/lib/python to your PYTHONPATH. Alternatively, you 
-can edit ./install and remove the '--home' option. That will cause EC to be 
-installed so that it is accessible to all users without having to change their 
-PYTHONPATH, but it requires that you be root when you run the ./install command.
+It will install the program into ~/.local.  Both the program and a man page are 
+installed. You do not need root access to install into ~/.local, but in doing so 
+it is only easily accessible by you and you will need to add ~/.local/bin
+to your PATH. Alternatively, you can edit ./install and remove the '--prefix' 
+option.  That will cause EC to be installed so that it is accessible to all 
+users without having to change their PATH, but it requires that you be root when 
+you run the ./install command.
 
 The functionality of ec0 will vary slightly based on the version of python you 
 are using. Older versions have less functionality.

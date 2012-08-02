@@ -1,6 +1,7 @@
 *.py[co]
 ec.1
 .*.sum
+.*.swp
 
 # Packages
 *.egg
