@@ -3,4 +3,4 @@
 # remove build directory from a previous install to assure a clean install
 rm -rf build
 
-python setup.py install --user
+python setup.py install --prefix=$HOME/.local
