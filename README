@@ -10,6 +10,8 @@ Be aware that some features are not available with the earlier versions of
 Python, and furthermore, some tests will fail because those features are 
 missing. I hope to clean this situation up in a subsequent release.
 
+More information on both ec and ec0 can be found at www.nurdletech.com/ec.html.
+
 To get the source code:
 $ git clone git://github.com/KenKundert/ec0.git
 

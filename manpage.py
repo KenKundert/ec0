@@ -825,10 +825,14 @@ Email('''
 Section('See Also')
 Paragraph('bc, dc')
 
-# Print the document {{{2
-try:
-    fp = open('ec.1', 'w')
-    fp.write('\n'.join(document) + '\n')
-    fp.close()
-except (IOError, OSError), err:
-    exit("%s: %s." % (err.filename, err.strerror))
+# Generate the man page {{{1
+def write(fileName):
+    try:
+        fp = open(fileName, 'w')
+        fp.write('\n'.join(document) + '\n')
+        fp.close()
+    except (IOError, OSError), err:
+        exit("%s: %s." % (err.filename, err.strerror))
+
+if __name__ == '__main__':
+    write('ec.1')
