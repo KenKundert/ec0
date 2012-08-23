@@ -8,7 +8,7 @@
 from __future__ import division
 from actions import \
     actionsToUse, predefinedVariables, defaultFormat, defaultDigits
-from calculator import Calculator, Display, CalculatorError
+from calculator import Calculator, Display, CalculatorError, split
 from cmdline import commandLineProcessor
 from os.path import expanduser
 import sys, os
@@ -90,7 +90,7 @@ def printWarning(message):
 def evaluateLine(calc, line, prompt):
     try:
         result = calc.evaluate(
-            calc.split(line)
+            split(line)
         )
         prompt = calc.format(result)
     except CalculatorError, err:

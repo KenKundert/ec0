@@ -47,6 +47,36 @@ addition = BinaryOp(
         register.
     """
 )
+addition.addTest(
+    stimulus='1 1 +'
+  , result=1 + 1
+  , units=''
+  , text='2'
+)
+addition.addTest(
+    stimulus='100mV 25mV+'
+  , result=100e-3 + 25e-3
+  , units='V'
+  , text='125 mV'
+)
+addition.addTest(
+    stimulus='$100M $25M+'
+  , result=100e6 + 25e6
+  , units='$'
+  , text='$125M'
+)
+addition.addTest(
+    stimulus='200mV 100m+'
+  , result=0.2 + 0.1
+  , units=''
+  , text='300m'
+)
+addition.addTest(
+    stimulus='1 j +'
+  , result=1 + 1j
+  , units=''
+  , text='1 + j'
+)
 
 # subtraction {{{3
 subtraction = BinaryOp(
@@ -62,6 +92,36 @@ subtraction = BinaryOp(
         register.
     """
 )
+subtraction.addTest(
+    stimulus='1 1 -'
+  , result=0
+  , units=''
+  , text='0'
+)
+subtraction.addTest(
+    stimulus='100mV 25mV-'
+  , result=100e-3 - 25e-3
+  , units='V'
+  , text='75 mV'
+)
+subtraction.addTest(
+    stimulus='$100M $25M-'
+  , result=100e6 - 25e6
+  , units='$'
+  , text='$75M'
+)
+subtraction.addTest(
+    stimulus='200mV 100m-'
+  , result=0.2 - 0.1
+  , units=''
+  , text='100m'
+)
+subtraction.addTest(
+    stimulus='1 j -'
+  , result=1 - 1j
+  , units=''
+  , text='1 - j'
+)
 
 # multiplication {{{3
 multiplication = BinaryOp(
@@ -74,6 +134,30 @@ multiplication = BinaryOp(
         stack and the product is placed back on the stack into the #{x}
         register.
     """
+)
+multiplication.addTest(
+    stimulus='2 2 *'
+  , result=2 * 2
+  , units=''
+  , text='4'
+)
+multiplication.addTest(
+    stimulus='25MHz 2pi * "rads/s"'
+  , result=2 * math.pi * 25e6
+  , units='rads/s'
+  , text='157.08 Mrads/s'
+)
+multiplication.addTest(
+    stimulus='1 j *'
+  , result=1j
+  , units=''
+  , text='j'
+)
+multiplication.addTest(
+    stimulus='j j *'
+  , result=-1
+  , units=''
+  , text='-1'
 )
 
 # true division {{{3
@@ -91,6 +175,18 @@ trueDivision = BinaryOp(
             @{500m}:
         }
     """
+)
+trueDivision.addTest(
+    stimulus='1 2/'
+  , result=1/2
+  , units=''
+  , text='500m'
+)
+trueDivision.addTest(
+    stimulus='1 j /'
+  , result=-1j
+  , units=''
+  , text='-j'
 )
 
 # floor division {{{3
@@ -111,6 +207,12 @@ floorDivision = BinaryOp(
         }
     """
 )
+floorDivision.addTest(
+    stimulus='5 2//'
+  , result=5//2
+  , units=''
+  , text='2'
+)
 
 # modulus {{{3
 modulus = BinaryOp(
@@ -130,6 +232,12 @@ modulus = BinaryOp(
         times, which leaves a remainder of 2.
     """
 )
+modulus.addTest(
+    stimulus='5 2%'
+  , result=5%2
+  , units=''
+  , text='1'
+)
 
 # percent change {{{3
 percentChange = BinaryOp(
@@ -143,11 +251,19 @@ percentChange = BinaryOp(
         back into the #{x} register.
     """
 )
+percentChange.addTest(
+    stimulus='10 10.5 %chg'
+  , result=100*(10.5 - 10)/10
+  , units=''
+  , text='5'
+)
 
 # parallel combination {{{3
 parallel = BinaryOp(
     '||'
   , lambda y, x: (x/(x+y))*y
+  # keep units of x if they are the same as units of y
+  , units=lambda calc, units: choose(units[0], units[0] == units[1], '')
   , description="%(key)s: parallel combination"
   , synopsis='#{x}, #{y}, ... => 1/(1/#{x}+1/#{y}), ...'
   , summary="""
@@ -160,16 +276,47 @@ parallel = BinaryOp(
         conductance, capacitance or susceptance of the two in series.
     """
 )
+parallel.addTest(
+    stimulus='100 100 ||'
+  , result=(100/(100+100))*100
+  , units=''
+  , text='50'
+)
+parallel.addTest(
+    stimulus='10kOhm 10kOhm ||'
+  , result=(1e4/(1e4+1e4))*1e4
+  , units='Ohm'
+  , text='5 KOhm'
+)
+parallel.addTest(
+    stimulus='50_Ohm 50 ||'
+  , result=(50/(50+50))*50
+  , units=''
+  , text='25'
+)
 
 # negation {{{3
 negation = UnaryOp(
     'chs'
   , operator.neg
+  , units=lambda calc, units: units[0]
   , description="%(key)s: change sign"
   , synopsis='#{x}, ... => -#{x}, ...'
   , summary="""
         The value in the #{x} register is replaced with its negative. 
     """
+)
+negation.addTest(
+    stimulus='-3 chs'
+  , result=3
+  , units=''
+  , text='3'
+)
+negation.addTest(
+    stimulus='330pF chs'
+  , result=-330e-12
+  , units='F'
+  , text='-330 pF'
 )
 
 # reciprocal {{{3
@@ -182,11 +329,34 @@ reciprocal = UnaryOp(
         The value in the #{x} register is replaced with its reciprocal. 
     """
 )
+reciprocal.addTest(
+    stimulus='4 recip'
+  , result=1/4
+  , units=''
+  , text='250m'
+)
+reciprocal.addTest(
+    stimulus='1kOhm recip'
+  , result=1/1000
+  , units=''
+  , text='1m'
+)
+reciprocal.addTest(
+    stimulus='0 recip'
+  , error='division by zero'
+)
+reciprocal.addTest(
+    stimulus='j recip'
+  , result=-1j
+  , units=''
+  , text='-j'
+)
 
 # ceiling {{{3
 ceiling = UnaryOp(
     'ceil'
   , math.ceil
+  , units=lambda calc, units: units[0]
   , description="%(key)s: round towards positive infinity"
   , synopsis='#{x}, ... => ceil(#{x}), ...'
   , summary="""
@@ -195,11 +365,34 @@ ceiling = UnaryOp(
         value).
     """
 )
+ceiling.addTest(
+    stimulus='1.5 ceil'
+  , result=math.ceil(1.5)
+  , units=''
+  , text='2'
+)
+ceiling.addTest(
+    stimulus='-1.5 ceil'
+  , result=math.ceil(-1.5)
+  , units=''
+  , text='-1'
+)
+ceiling.addTest(
+    stimulus='7.5_Hz ceil'
+  , result=math.ceil(7.5)
+  , units='Hz'
+  , text='8 Hz'
+)
+ceiling.addTest(
+    stimulus='j ceil'
+  , error='Function does not support a complex argument.'
+)
 
 # floor {{{3
 floor = UnaryOp(
     'floor'
   , math.floor
+  , units=lambda calc, units: units[0]
   , description="%(key)s: round towards negative infinity"
   , synopsis='#{x}, ... => floor(#{x}), ...'
   , summary="""
@@ -208,6 +401,29 @@ floor = UnaryOp(
         than its value).
     """
 )
+floor.addTest(
+    stimulus='1.5 floor'
+  , result=math.floor(1.5)
+  , units=''
+  , text='1'
+)
+floor.addTest(
+    stimulus='-1.5 floor'
+  , result=math.floor(-1.5)
+  , units=''
+  , text='-2'
+)
+floor.addTest(
+    stimulus='7.5_Hz floor'
+  , result=math.floor(7.5)
+  , units='Hz'
+  , text='7 Hz'
+)
+floor.addTest(
+    stimulus='j floor'
+  , error='Function does not support a complex argument.'
+)
+
 
 # factorial {{{3
 try:
@@ -220,8 +436,15 @@ try:
             The value in the #{x} register is replaced with its factorial.
         """
     )
+    factorial.addTest(
+        stimulus='6!'
+      , result=math.factorial(6)
+      , units=''
+      , text='720'
+    )
 except AttributeError:
     factorial = None
+
 # random number {{{3
 randomNumber = Constant(
     'rand'
@@ -233,6 +456,8 @@ randomNumber = Constant(
         the stack into #{x} register.
     """
 )
+randomNumber.addTest('rand', units='')
+
 
 # Logs, Powers, and Exponentials {{{2
 powersAndLogs = Category("Powers, Roots, Exponentials and Logarithms")
@@ -250,13 +475,29 @@ power = BinaryOp(
     """
   , aliases=['pow', 'ytox']
 )
+power.addTest(
+    stimulus='500 2**'
+  , result=500**2
+  , units=''
+  , text='250K'
+)
+power.addTest(
+    stimulus='8 1 3/ pow'
+  , result=2
+  , units=''
+  , text='2'
+)
+power.addTest(
+    stimulus='-8 1 3/ ytox'
+  , error='negative number cannot be raised to a fractional power'
+)
 
 # exponential {{{3
 exponential = UnaryOp(
     'exp'
     # the following rather odd form implements the if/else construct, which is
     # only available in python 2.5 and beyond
-  , lambda x: (math.exp, cmath.exp)[type(x) == complex or x < 0](x)
+  , lambda x: (math.exp, cmath.exp)[type(x) == complex](x)
   , description="%(key)s: natural exponential"
   , synopsis='#{x}, ... => exp(#{x}), ...'
   , summary="""
@@ -264,6 +505,23 @@ exponential = UnaryOp(
         Supports a complex argument.
     """
   , aliases=['powe']
+)
+exponential.addTest(
+    stimulus='10 exp ln'
+  , result=10
+  , units=''
+  , text='10'
+)
+exponential.addTest(
+    stimulus='-10 powe ln'
+  , result=-10
+  , units=''
+  , text='-10'
+)
+exponential.addTest(
+    stimulus='j pi * exp'
+  , result=-1
+  , units=''
 )
 
 # natural logarithm {{{3
@@ -280,6 +538,24 @@ naturalLog = UnaryOp(
     """
   , aliases=['loge']
 )
+naturalLog.addTest(
+    stimulus='100 ln exp'
+  , result=100
+  , units=''
+  , text='100'
+)
+naturalLog.addTest(
+    stimulus='-100 loge'
+  , result=(4.60517018599+3.14159265359j)
+  , units=''
+  , text='4.6052 + j3.1416'
+)
+naturalLog.addTest(
+    stimulus='j ln'
+  , result=1.57079632679j
+  , units=''
+  , text='j1.5708'
+)
 
 # raise 10 to the power of x {{{3
 tenPower = UnaryOp(
@@ -291,6 +567,18 @@ tenPower = UnaryOp(
         The value in the #{x} register is replaced with 10 raised to #{x}.
     """
   , aliases=['10tox']
+)
+tenPower.addTest(
+    stimulus='10 pow10 log'
+  , result=10
+  , units=''
+  , text='10'
+)
+tenPower.addTest(
+    stimulus='-10 10tox log'
+  , result=-10
+  , units=''
+  , text='-10'
 )
 
 # common logarithm {{{3
@@ -304,6 +592,36 @@ commonLog = UnaryOp(
     """
   , aliases=['log10', 'lg']
 )
+commonLog.addTest(
+    stimulus='100 log pow10'
+  , result=100
+  , units=''
+  , text='100'
+)
+
+# raise 2 to the power of x {{{3
+twoPower = UnaryOp(
+    'pow2'
+  , lambda x: 2**x
+  , description="%(key)s: raise 2 to the power of x"
+  , synopsis='#{x}, ... => 2**#{x}, ...'
+  , summary="""
+        The value in the #{x} register is replaced with 2 raised to #{x}.
+    """
+  , aliases=['2tox']
+)
+twoPower.addTest(
+    stimulus='16 pow2'
+  , result=65536
+  , units=''
+  , text='65.536K'
+)
+twoPower.addTest(
+    stimulus='-2 2tox'
+  , result=0.25
+  , units=''
+  , text='250m'
+)
 
 # binary logarithm {{{3
 binaryLog = UnaryOp(
@@ -316,6 +634,18 @@ binaryLog = UnaryOp(
     """
   , aliases=['lb']
 )
+binaryLog.addTest(
+    stimulus='65536 log2'
+  , result=16
+  , units=''
+  , text='16'
+)
+binaryLog.addTest(
+    stimulus='0.25 lb'
+  , result=-2
+  , units=''
+  , text='-2'
+)
 
 # square {{{3
 square = UnaryOp(
@@ -326,6 +656,18 @@ square = UnaryOp(
   , summary="""
         The value in the #{x} register is replaced with its square. 
     """
+)
+square.addTest(
+    stimulus='4 sqr'
+  , result=4*4
+  , units=''
+  , text='16'
+)
+square.addTest(
+    stimulus='j sqr'
+  , result=-1
+  , units=''
+  , text='-1'
 )
 
 # square root {{{3
@@ -339,6 +681,24 @@ squareRoot = UnaryOp(
   , summary="""
         The value in the #{x} register is replaced with its square root.
     """
+)
+squareRoot.addTest(
+    stimulus='16 sqrt'
+  , result=4
+  , units=''
+  , text='4'
+)
+squareRoot.addTest(
+    stimulus='-4 sqrt'
+  , result=2j
+  , units=''
+  , text='j2'
+)
+squareRoot.addTest(
+    stimulus='4 j * sqrt'
+  , result=math.sqrt(2) + 1j*math.sqrt(2)
+  , units=''
+  , text='1.4142 + j1.4142'
 )
 
 # cube root {{{3
@@ -355,6 +715,18 @@ try:
       , summary="""
             The value in the #{x} register is replaced with its cube root.
         """
+    )
+    cubeRoot.addTest(
+        stimulus='64 cbrt'
+      , result=4
+      , units=''
+      , text='4'
+    )
+    cubeRoot.addTest(
+        stimulus='-8 cbrt'
+      , result=-2
+      , units=''
+      , text='-2'
     )
 except ImportError:
     cubeRoot = None
@@ -373,6 +745,24 @@ sine = UnaryOp(
         The value in the #{x} register is replaced with its sine.
     """
 )
+sine.addTest(
+    stimulus='90 sin'
+  , result=1
+  , units=''
+  , text='1'
+)
+sine.addTest(
+    stimulus='degs 270 sin'
+  , result=-1
+  , units=''
+  , text='-1'
+)
+sine.addTest(
+    stimulus='rads pi 2/ sin'
+  , result=1
+  , units=''
+  , text='1'
+)
 
 # cosine {{{3
 cosine = UnaryOp(
@@ -385,6 +775,24 @@ cosine = UnaryOp(
         The value in the #{x} register is replaced with its cosine.
     """
 )
+cosine.addTest(
+    stimulus='180 cos'
+  , result=-1
+  , units=''
+  , text='-1'
+)
+cosine.addTest(
+    stimulus='rads pi cos'
+  , result=-1
+  , units=''
+  , text='-1'
+)
+cosine.addTest(
+    stimulus='degs 360 cos'
+  , result=1
+  , units=''
+  , text='1'
+)
 
 # tangent {{{3
 tangent = UnaryOp(
@@ -396,6 +804,24 @@ tangent = UnaryOp(
   , summary="""
         The value in the #{x} register is replaced with its tangent.
     """
+)
+tangent.addTest(
+    stimulus='45 tan'
+  , result=1
+  , units=''
+  , text='1'
+)
+tangent.addTest(
+    stimulus='rads pi 4/ tan'
+  , result=1
+  , units=''
+  , text='1'
+)
+tangent.addTest(
+    stimulus='degs -45 tan'
+  , result=-1
+  , units=''
+  , text='-1'
 )
 
 # arc sine {{{3
@@ -410,6 +836,28 @@ arcSine = UnaryOp(
         The value in the #{x} register is replaced with its arc sine.
     """
 )
+arcSine.addTest(
+    stimulus='1 asin'
+  , result=90
+  , units='degs'
+  , text='90 degs'
+)
+arcSine.addTest(
+    stimulus='rads 1 sin asin'
+  , result=1
+  , units='rads'
+  , text='1 rads'
+)
+arcSine.addTest(
+    stimulus='degs -1 asin'
+  , result=-90
+  , units='degs'
+  , text='-90 degs'
+)
+arcSine.addTest(
+    stimulus='degs 2 asin'
+  , error='math domain error'
+)
 
 # arc cosine {{{3
 arcCosine = UnaryOp(
@@ -423,6 +871,28 @@ arcCosine = UnaryOp(
         The value in the #{x} register is replaced with its arc cosine.
     """
 )
+arcCosine.addTest(
+    stimulus='0 acos'
+  , result=90
+  , units='degs'
+  , text='90 degs'
+)
+arcCosine.addTest(
+    stimulus='rads 1 acos'
+  , result=0
+  , units='rads'
+  , text='0 rads'
+)
+arcCosine.addTest(
+    stimulus='degs 45 cos acos'
+  , result=45
+  , units='degs'
+  , text='45 degs'
+)
+arcCosine.addTest(
+    stimulus='degs 2 acos'
+  , error='math domain error'
+)
 
 # arc tangent {{{3
 arcTangent = UnaryOp(
@@ -435,6 +905,24 @@ arcTangent = UnaryOp(
   , summary="""
         The value in the #{x} register is replaced with its arc tangent.
     """
+)
+arcTangent.addTest(
+    stimulus='0 atan'
+  , result=0
+  , units='degs'
+  , text='0 degs'
+)
+arcTangent.addTest(
+    stimulus='rads 0 atan'
+  , result=0
+  , units='rads'
+  , text='0 rads'
+)
+arcTangent.addTest(
+    stimulus='degs 45 tan atan'
+  , result=45
+  , units='degs'
+  , text='45 degs'
 )
 
 # radians {{{3
@@ -486,6 +974,30 @@ absoluteValue = Dup(
     """
   , aliases=['mag']
 )
+absoluteValue.addTest(
+    stimulus='-1 abs'
+  , result=1
+  , units=''
+  , text='1'
+)
+absoluteValue.addTest(
+    stimulus='-1MHz abs'
+  , result=1e6
+  , units='Hz'
+  , text='1 MHz'
+)
+absoluteValue.addTest(
+    stimulus='j chs mag'
+  , result=1
+  , units=''
+  , text='1'
+)
+absoluteValue.addTest(
+    stimulus='1 j + "V" mag pop'
+  , result=1+1j
+  , units='V'
+  , text='1 V + j V'
+)
 
 # argument {{{3
 # Argument of a complex number, also known as the phase , or angle
@@ -507,10 +1019,37 @@ argument = Dup(
     """
   , aliases=['ph']
 )
+argument.addTest(
+    stimulus='1 j + arg'
+  , result=45
+  , units='degs'
+  , text='45 degs'
+)
+argument.addTest(
+    stimulus='rads 1 j - ph'
+  , result=-math.pi/4
+  , units='rads'
+  , text='-785.4 mrads'
+)
+argument.addTest(
+    stimulus='1 j + "V" ph pop'
+  , result=1+1j
+  , units='V'
+  , text='1 V + j V'
+)
+argument.addTest(
+    stimulus='1 j + "m/s" arg pop'
+  , result=1+1j
+  , units='m/s'
+  , text='1 m/s + j m/s'
+)
+
 # hypotenuse {{{3
 hypotenuse = BinaryOp(
     'hypot'
   , math.hypot
+  # keep units of x if they are the same as units of y
+  , units=lambda calc, units: choose(units[0], units[0] == units[1], '')
   , description="%(key)s: hypotenuse"
   , synopsis='#{x}, #{y}, ... => sqrt(#{x}**2+#{y}**2), ...'
   , summary="""
@@ -519,6 +1058,18 @@ hypotenuse = BinaryOp(
         (#{x},#{y}).
     """
   , aliases=['len']
+)
+hypotenuse.addTest(
+    stimulus='3 4 hypot'
+  , result=5
+  , units=''
+  , text='5'
+)
+hypotenuse.addTest(
+    stimulus='3mm 4mm len'
+  , result=5e-3
+  , units='m'
+  , text='5 mm'
 )
 
 # arc tangent 2 {{{3
@@ -535,14 +1086,46 @@ arcTangent2 = BinaryOp(
     """
   , aliases=['angle']
 )
+arcTangent2.addTest(
+    stimulus='3 3 atan2'
+  , result=45
+  , units='degs'
+  , text='45 degs'
+)
+arcTangent2.addTest(
+    stimulus='rads -3 3 angle'
+  , result=-math.pi/4
+  , units='rads'
+  , text='-785.4 mrads'
+)
+arcTangent2.addTest(
+    stimulus='-3 -3 atan2'
+  , result=-135
+  , units='degs'
+  , text='-135 degs'
+)
+arcTangent2.addTest(
+    stimulus='3 -3 angle'
+  , result=135
+  , units='degs'
+  , text='135 degs'
+)
+arcTangent2.addTest(
+    stimulus='rads 0 0 atan2'
+  , result=0
+  , units='rads'
+  , text='0 rads'
+)
 
 # rectangular to polar {{{3
 rectangularToPolar = BinaryIoOp(
     'rtop'
   , lambda y, x, calc: (math.hypot(y, x), calc.fromRadians(math.atan2(y,x)))
+  # keep units of x if they are the same as units of y
+  , xUnits=lambda calc, units: choose(units[0], units[0] == units[1], '')
+  , yUnits=lambda calc, units: calc.angleUnits()
   , description="%(key)s: convert rectangular to polar coordinates"
   , needCalc=True
-  , yUnits=lambda calc: calc.angleUnits()
   , synopsis='#{x}, #{y}, ... => sqrt(#{x}**2+#{y}**2), atan2(#{y},#{x}), ...'
   , summary="""
         The values in the #{x} and #{y} registers are popped from the stack and 
@@ -550,6 +1133,30 @@ rectangularToPolar = BinaryIoOp(
         (#{x},#{y}) and with the angle of the vector from the origin to the point 
         (#{x},#{y}).
     """
+)
+rectangularToPolar.addTest(
+    stimulus='3 4 rtop'
+  , result=5
+  , units=''
+  , text='5'
+)
+rectangularToPolar.addTest(
+    stimulus='3kOhm -4kOhm rtop'
+  , result=5e3
+  , units='Ohm'
+  , text='5 KOhm'
+)
+rectangularToPolar.addTest(
+    stimulus='4MOhm 4MOhm rtop swap'
+  , result=45
+  , units='degs'
+  , text='45 degs'
+)
+rectangularToPolar.addTest(
+    stimulus='rads 4MOhm 4MOhm rtop swap'
+  , result=math.pi/4
+  , units='rads'
+  , text='785.4 mrads'
 )
 
 # polar to rectangular {{{3
@@ -561,14 +1168,38 @@ polarToRectangular = BinaryIoOp(
     )
   , description="%(key)s: convert polar to rectangular coordinates"
   , needCalc=True
-  , xUnits=lambda calc: calc.stack.peek()[1]
-  , yUnits=lambda calc: calc.stack.peek()[1]
+  , xUnits=lambda calc, units: units[0]
+  , yUnits=lambda calc, units: units[0]
   , synopsis='#{x}, #{y}, ... => #{x}*cos(#{y}), #{x}*sin(#{y}), ...'
   , summary="""
         The values in the #{x} and #{y} registers are popped from the stack and
         interpreted as the length and angle of a vector and are replaced with
         the coordinates of the end-point of that vector.
     """
+)
+polarToRectangular.addTest(
+    stimulus='45 2 sqrt "V" ptor'
+  , result=1
+  , units='V'
+  , text='1 V'
+)
+polarToRectangular.addTest(
+    stimulus='45 2 sqrt "V" ptor swap'
+  , result=1
+  , units='V'
+  , text='1 V'
+)
+polarToRectangular.addTest(
+    stimulus='rads pi 4/ 2 sqrt "V" ptor'
+  , result=1
+  , units='V'
+  , text='1 V'
+)
+polarToRectangular.addTest(
+    stimulus='rads pi 4/ 2 sqrt "V" ptor swap'
+  , result=1
+  , units='V'
+  , text='1 V'
 )
 
 # Hyperbolic Functions {{{2
@@ -584,6 +1215,12 @@ hyperbolicSine = UnaryOp(
         The value in the #{x} register is replaced with its hyperbolic sine.
     """
 )
+hyperbolicSine.addTest(
+    stimulus='1 sinh'
+  , result=math.sinh(1)
+  , units=''
+  , text='1.1752'
+)
 
 # hyperbolic cosine {{{3
 hyperbolicCosine = UnaryOp(
@@ -595,6 +1232,12 @@ hyperbolicCosine = UnaryOp(
         The value in the #{x} register is replaced with its hyperbolic cosine.
     """
 )
+hyperbolicCosine.addTest(
+    stimulus='1 cosh'
+  , result=math.cosh(1)
+  , units=''
+  , text='1.5431'
+)
 
 # hyperbolic tangent {{{3
 hyperbolicTangent = UnaryOp(
@@ -605,6 +1248,12 @@ hyperbolicTangent = UnaryOp(
   , summary="""
         The value in the #{x} register is replaced with its hyperbolic tangent.
     """
+)
+hyperbolicTangent.addTest(
+    stimulus='1 tanh'
+  , result=math.tanh(1)
+  , units=''
+  , text='761.59m'
 )
 
 # hyperbolic arc sine {{{3
@@ -618,8 +1267,15 @@ try:
             The value in the #{x} register is replaced with its hyperbolic arc sine.
         """
     )
+    hyperbolicArcSine.addTest(
+        stimulus='1 sinh asinh'
+      , result=1
+      , units=''
+      , text='1'
+    )
 except AttributeError:
     hyperbolicArcSine = None
+
 # hyperbolic arc cosine {{{3
 try:
     hyperbolicArcCosine = UnaryOp(
@@ -632,8 +1288,15 @@ try:
             cosine.
         """
     )
+    hyperbolicArcCosine.addTest(
+        stimulus='1 cosh acosh'
+      , result=1
+      , units=''
+      , text='1'
+    )
 except AttributeError:
     hyperbolicArcCosine = None
+
 # hyperbolic arc tangent {{{3
 try:
     hyperbolicArcTangent = UnaryOp(
@@ -645,6 +1308,12 @@ try:
             The value in the #{x} register is replaced with its hyperbolic arc
             tangent.
         """
+    )
+    hyperbolicArcTangent.addTest(
+        stimulus='1 tanh atanh'
+      , result=1
+      , units=''
+      , text='1'
     )
 except AttributeError:
     hyperbolicArcTangent = None
@@ -665,6 +1334,30 @@ decibels20 = UnaryOp(
     """
   , aliases=['db20', 'v2db', 'i2db']
 )
+decibels20.addTest(
+    stimulus='100 db'
+  , result=40
+  , units=''
+  , text='40'
+)
+decibels20.addTest(
+    stimulus='10m db20'
+  , result=-40
+  , units=''
+  , text='-40'
+)
+decibels20.addTest(
+    stimulus='1000 v2db'
+  , result=60
+  , units=''
+  , text='60'
+)
+decibels20.addTest(
+    stimulus='1m i2db'
+  , result=-60
+  , units=''
+  , text='-60'
+)
 
 # decibels to voltage or current {{{3
 antiDecibels20 = UnaryOp(
@@ -679,6 +1372,25 @@ antiDecibels20 = UnaryOp(
     """
   , aliases=['db2v', 'db2i']
 )
+antiDecibels20.addTest(
+    stimulus='40 adb'
+  , result=100
+  , units=''
+  , text='100'
+)
+antiDecibels20.addTest(
+    stimulus='40 db2v'
+  , result=100
+  , units=''
+  , text='100'
+)
+antiDecibels20.addTest(
+    stimulus='40 db2i'
+  , result=100
+  , units=''
+  , text='100'
+)
+
 # power to decibels {{{3
 decibels10 = UnaryOp(
     'db10'
@@ -691,6 +1403,18 @@ decibels10 = UnaryOp(
         apply this form when converting power to decibels.
     """
   , aliases=['p2db']
+)
+decibels10.addTest(
+    stimulus='100 db10'
+  , result=20
+  , units=''
+  , text='20'
+)
+decibels10.addTest(
+    stimulus='100 p2db'
+  , result=20
+  , units=''
+  , text='20'
 )
 
 # decibels to power {{{3
@@ -705,6 +1429,18 @@ antiDecibels10 = UnaryOp(
         form when converting decibels to voltage or current.  
     """
   , aliases=['db2p']
+)
+antiDecibels10.addTest(
+    stimulus='20 adb10'
+  , result=100
+  , units=''
+  , text='100'
+)
+antiDecibels10.addTest(
+    stimulus='20 db2p'
+  , result=100
+  , units=''
+  , text='100'
 )
 
 # voltage to dBm {{{3
@@ -721,6 +1457,24 @@ voltageToDbm = UnaryOp(
         decibels relative to 1 milliwatt.  
     """
   , aliases=['v2dbm']
+)
+voltageToDbm.addTest(
+    stimulus='1 vdbm'
+  , result=10
+  , units=''
+  , text='10'
+)
+voltageToDbm.addTest(
+    stimulus='0.1 v2dbm'
+  , result=-10
+  , units=''
+  , text='-10'
+)
+voltageToDbm.addTest(
+    stimulus='5 "Ohms" =Rref 1 vdbm'
+  , result=20
+  , units=''
+  , text='20'
 )
 
 # dBm to voltage {{{3
@@ -739,6 +1493,24 @@ dbmToVoltage = UnaryOp(
     """
   , aliases=['dbm2v']
 )
+dbmToVoltage.addTest(
+    stimulus='10 dbmv'
+  , result=1
+  , units='V'
+  , text='1 V'
+)
+dbmToVoltage.addTest(
+    stimulus='-10 dbmv'
+  , result=0.1
+  , units='V'
+  , text='100 mV'
+)
+dbmToVoltage.addTest(
+    stimulus='5 "Ohms" =Rref 20 dbmv'
+  , result=1
+  , units='V'
+  , text='1 V'
+)
 
 # current to dBm {{{3
 currentToDbm = UnaryOp(
@@ -754,6 +1526,24 @@ currentToDbm = UnaryOp(
         decibels relative to 1 milliwatt.
     """
   , aliases=['i2dbm']
+)
+currentToDbm.addTest(
+    stimulus='2mA idbm'
+  , result=-10
+  , units=''
+  , text='-10'
+)
+currentToDbm.addTest(
+    stimulus='20uA i2dbm'
+  , result=-50
+  , units=''
+  , text='-50'
+)
+currentToDbm.addTest(
+    stimulus='5 "Ohms" =Rref 20uA idbm'
+  , result=-60
+  , units=''
+  , text='-60'
 )
 
 # dBm to current {{{3
@@ -772,6 +1562,24 @@ dbmToCurrent = UnaryOp(
     """
   , aliases=['dbm2i']
 )
+dbmToCurrent.addTest(
+    stimulus='10 dbmi'
+  , result=20e-3
+  , units='A'
+  , text='20 mA'
+)
+dbmToCurrent.addTest(
+    stimulus='-10 dbmi'
+  , result=2e-3
+  , units='A'
+  , text='2 mA'
+)
+dbmToCurrent.addTest(
+    stimulus='5 "Ohms" =Rref -20 dbmi'
+  , result=2e-3
+  , units='A'
+  , text='2 mA'
+)
 
 # Constants {{{2
 constants = Category("Constants")
@@ -788,6 +1596,12 @@ pi = Constant(
         register.
     """
 )
+pi.addTest(
+    stimulus='pi'
+  , result=math.pi
+  , units='rads'
+  , text='3.1416 rads'
+)
 
 # 2 pi {{{3
 twoPi = Constant(
@@ -801,6 +1615,12 @@ twoPi = Constant(
         #{x} register.
     """
 )
+twoPi.addTest(
+    stimulus='2pi'
+  , result=2*math.pi
+  , units='rads'
+  , text='6.2832 rads'
+)
 
 # sqrt 2 {{{3
 squareRoot2 = Constant(
@@ -813,6 +1633,12 @@ squareRoot2 = Constant(
         register.
     """
 )
+squareRoot2.addTest(
+    stimulus='rt2'
+  , result=math.sqrt(2)
+  , units=''
+  , text='1.4142'
+)
 
 # j {{{3
 imaginaryUnit = Constant(
@@ -824,6 +1650,12 @@ imaginaryUnit = Constant(
         The imaginary unit (square root of -1) is pushed on the stack into
         the #{x} register.
     """
+)
+imaginaryUnit.addTest(
+    stimulus='j'
+  , result=1j
+  , units=''
+  , text='j'
 )
 
 # j2pi {{{3
@@ -838,8 +1670,14 @@ imaginaryTwoPi = Constant(
         the #{x} register.
     """
 )
+imaginaryTwoPi.addTest(
+    stimulus='j2pi'
+  , result=2j*math.pi
+  , units='rads'
+  , text='j6.2832 rads'
+)
 
-# plank constant {{{3
+# planck constant {{{3
 planckConstant = Constant(
     'h'
   , lambda: 6.62606957e-34
@@ -850,6 +1688,12 @@ planckConstant = Constant(
         The Planck constant (6.62606957e-34 J-s) is pushed on the stack into
         the #{x} register.
     """
+)
+planckConstant.addTest(
+    stimulus='h'
+  , result=6.62606957e-34
+  , units='J-s'
+  , text='662.61e-36 J-s'
 )
 
 # reduced plank constant {{{3
@@ -864,6 +1708,12 @@ planckConstantReduced = Constant(
         into the #{x} register.
     """
 )
+planckConstantReduced.addTest(
+    stimulus='hbar'
+  , result=1.054571726e-34
+  , units='J-s'
+  , text='105.46e-36 J-s'
+)
 
 # planck length {{{3
 planckLength = Constant(
@@ -876,6 +1726,12 @@ planckLength = Constant(
         The Planck length (sqrt(h*G/(2*pi*c**3)) or 1.616199e-35 m) is pushed on
         the stack into the #{x} register.
     """
+)
+planckLength.addTest(
+    stimulus='lP'
+  , result=1.616199e-35
+  , units='m'
+  , text='16.162e-36 m'
 )
 
 # planck mass {{{3
@@ -890,18 +1746,11 @@ planckMass = Constant(
         the stack into the #{x} register.
     """
 )
-
-# reduced planck mass {{{3
-planckMassReduced = Constant(
-    'mPr'
-  , lambda: 2.17651e-5
-  , description="%(key)s: Reduced Planck mass"
+planckMass.addTest(
+    stimulus='mP'
+  , result=2.17651e-5
   , units='g'
-  , synopsis='... => #{mPr}, ...'
-  , summary="""
-        The reduced Planck mass (sqrt(h*c/(16*pi**2*G)) or 4.341e-6 g) is pushed
-        on the stack into the #{x} register.
-    """
+  , text='21.765 ug'
 )
 
 # planck temperature {{{3
@@ -916,6 +1765,12 @@ planckTemperature = Constant(
         on the stack into the #{x} register.
     """
 )
+planckTemperature.addTest(
+    stimulus='TP'
+  , result=1.416833e32
+  , units='K'
+  , text='141.68e30 K'
+)
 
 # planck time {{{3
 planckTime = Constant(
@@ -928,6 +1783,12 @@ planckTime = Constant(
         The Planck time (sqrt(h*G/(2*pi*c**5)) or 5.39106e-44 s) is pushed on
         the stack into the #{x} register.
     """
+)
+planckTime.addTest(
+    stimulus='tP'
+  , result=5.39106e-44
+  , units='s'
+  , text='53.911e-45 s'
 )
 
 # boltzmann constant {{{3
@@ -942,6 +1803,12 @@ boltzmann = Constant(
         stack into the #{x} register.
     """
 )
+boltzmann.addTest(
+    stimulus='k'
+  , result=1.3806488e-23
+  , units='J/K'
+  , text='13.806e-24 J/K'
+)
 
 # elementary charge {{{3
 elementaryCharge = Constant(
@@ -954,6 +1821,12 @@ elementaryCharge = Constant(
         The elementary charge (the charge of an electron or 1.602176565e-19 C)
         is pushed on the stack into the #{x} register.
     """
+)
+elementaryCharge.addTest(
+    stimulus='q'
+  , result=1.602176565e-19
+  , units='C'
+  , text='160.22e-21 C'
 )
 
 # mass of electron {{{3
@@ -968,6 +1841,12 @@ massOfElectron = Constant(
         the #{x} register.
     """
 )
+massOfElectron.addTest(
+    stimulus='me'
+  , result=9.10938291e-28
+  , units='g'
+  , text='910.94e-30 g'
+)
 
 # mass of proton {{{3
 massOfProton = Constant(
@@ -980,6 +1859,12 @@ massOfProton = Constant(
         The mass of a proton (1.672621777e-24 g) is pushed on the stack into
         the #{x} register.
     """
+)
+massOfProton.addTest(
+    stimulus='mp'
+  , result=1.672621777e-24
+  , units='g'
+  , text='1.6726e-24 g'
 )
 
 # speed of light {{{3
@@ -994,6 +1879,12 @@ speedOfLight = Constant(
         into the #{x} register.
     """
 )
+speedOfLight.addTest(
+    stimulus='c'
+  , result=2.99792458e8
+  , units='m/s'
+  , text='299.79 Mm/s'
+)
 
 # gravitational constant {{{3
 gravitationalConstant = Constant(
@@ -1006,6 +1897,12 @@ gravitationalConstant = Constant(
         The universal gravitational constant (6.6746e-11 m^3/(kg-s^2)) is pushed
         on the stack into the #{x} register.
     """
+)
+gravitationalConstant.addTest(
+    stimulus='G'
+  , result=6.6746e-11
+  , units='m^3/(kg-s^2)'
+  , text='66.746 pm^3/(kg-s^2)'
 )
 
 # acceleration of gravity {{{3
@@ -1020,6 +1917,12 @@ standardAccelerationOfGravity = Constant(
         on the stack into the #{x} register.
     """
 )
+standardAccelerationOfGravity.addTest(
+    stimulus='g'
+  , result=9.80665
+  , units='m/s^2'
+  , text='9.8066 m/s^2'
+)
 
 # avogadro constant {{{3
 avogadroConstant = Constant(
@@ -1032,6 +1935,12 @@ avogadroConstant = Constant(
         Avogadro constant (6.02214129e23) is pushed on the stack into the #{x}
         register.
     """
+)
+avogadroConstant.addTest(
+    stimulus='NA'
+  , result=6.02214129e23
+  , units='/mol'
+  , text='602.21e21 /mol'
 )
 
 # gas constant {{{3
@@ -1046,6 +1955,12 @@ molarGasConstant = Constant(
         the #{x} register.
     """
 )
+molarGasConstant.addTest(
+    stimulus='R'
+  , result=8.3144621
+  , units='J/(mol-K)'
+  , text='8.3145 J/(mol-K)'
+)
 
 # zero celsius {{{3
 zeroCelsius = Constant(
@@ -1058,6 +1973,12 @@ zeroCelsius = Constant(
         Zero celsius in kelvin (273.15 K) is pushed on the stack into
         the #{x} register.
     """
+)
+zeroCelsius.addTest(
+    stimulus='0C'
+  , result=273.15
+  , units='K'
+  , text='273.15 K'
 )
 
 # free space permittivity {{{3
@@ -1072,6 +1993,12 @@ freeSpacePermittivity = Constant(
         stack into the #{x} register.
     """
 )
+freeSpacePermittivity.addTest(
+    stimulus='eps0'
+  , result=8.854187817e-12
+  , units='F/m'
+  , text='8.8542 pF/m'
+)
 
 # free space permeability {{{3
 freeSpacePermeability = Constant(
@@ -1085,6 +2012,12 @@ freeSpacePermeability = Constant(
         stack into the #{x} register.
     """
 )
+freeSpacePermeability.addTest(
+    stimulus='mu0'
+  , result=4e-7*math.pi
+  , units='N/A^2'
+  , text='1.2566 uN/A^2'
+)
 
 # free space characteristic impedance {{{3
 freeSpaceCharacteristicImpedance = Constant(
@@ -1097,6 +2030,12 @@ freeSpaceCharacteristicImpedance = Constant(
         The characteristic impedance of free space (376.730313461 Ohms) is
         pushed on the stack into the #{x} register.
     """
+)
+freeSpaceCharacteristicImpedance.addTest(
+    stimulus='Z0'
+  , result=376.730313461
+  , units='Ohms'
+  , text='376.73 Ohms'
 )
 
 # Numbers {{{2
@@ -1117,11 +2056,47 @@ engineeringNumber = Number(
         represents 1e7 Hz.
     """
 )
+engineeringNumber.addTest(
+    stimulus='1m'
+  , result=1e-3
+  , units=''
+  , text='1m'
+)
+engineeringNumber.addTest(
+    stimulus='+10.1n'
+  , result=10.1e-9
+  , units=''
+  , text='10.1n'
+)
+engineeringNumber.addTest(
+    stimulus='-1.1GHz'
+  , result=-1.1e9
+  , units='Hz'
+  , text='-1.1 GHz'
+)
+engineeringNumber.addTest(
+    stimulus='$100k'
+  , result=1e5
+  , units='$'
+  , text='$100K'
+)
+engineeringNumber.addTest(
+    stimulus='$-20M'
+  , result=-20e6
+  , units='$'
+  , text='$-20M'
+)
+engineeringNumber.addTest(
+    stimulus='.2MOhms'
+  , result=2e5
+  , units='Ohms'
+  , text='200 KOhms'
+)
 
 # real number in scientific notation {{{3
 scientificNumber = Number(
-    pattern=r'\A(\$?[-+]?[0-9]*\.?[0-9]+[eE][-+]?[0-9]+)([a-zA-Z_]*)\Z'
-  , action=lambda matches: (float(matches[0]), matches[1])
+    pattern=r'\A(\$?)([-+]?[0-9]*\.?[0-9]+[eE][-+]?[0-9]+)([a-zA-Z_]*)\Z'
+  , action=lambda matches: (float(matches[1]), choose(matches[2], matches[2], matches[0]))
   , name='scinum'
   , description="<#{N}[.#{M}]>e<#{E}[#{U}]>: a real number in scientific notation"
   , synopsis='... => #{num}, ...'
@@ -1131,6 +2106,48 @@ scientificNumber = Number(
         #{E} is an integer exponent. #{U} the optional units (must not contain
         special characters).  For example, 2.2e-8F represents 22nF.
     """
+)
+scientificNumber.addTest(
+    stimulus='20.0e12'
+  , result=20e12
+  , units=''
+  , text='20T'
+)
+scientificNumber.addTest(
+    stimulus='+2.0e+9'
+  , result=2e9
+  , units=''
+  , text='2G'
+)
+scientificNumber.addTest(
+    stimulus='-5.0e-9'
+  , result=-5e-9
+  , units=''
+  , text='-5n'
+)
+scientificNumber.addTest(
+    stimulus='.5e-12F'
+  , result=5e-13
+  , units='F'
+  , text='500 fF'
+)
+scientificNumber.addTest(
+    stimulus='$500e6'
+  , result=5e8
+  , units='$'
+  , text='$500M'
+)
+scientificNumber.addTest(
+    stimulus='$+20e+03'
+  , result=2e4
+  , units='$'
+  , text='$20K'
+)
+scientificNumber.addTest(
+    stimulus='$-2.0e-3'
+  , result=-2e-3
+  , units='$'
+  , text='$-2m'
 )
 
 # hexadecimal number {{{3
@@ -1147,6 +2164,12 @@ hexadecimalNumber = Number(
         255.
     """
 )
+hexadecimalNumber.addTest(
+    stimulus='0x1f 0xAC + hex'
+  , result=203
+  , units=''
+  , text='0x00cb'
+)
 
 # octal number {{{3
 # oct must be before eng if we use the 0NNN form (as opposed to OoNNN form)
@@ -1162,6 +2185,12 @@ octalNumber = Number(
         0o77 represents the octal number 77 or the decimal number 63.
     """
 )
+octalNumber.addTest(
+    stimulus='0o77 0o33 + oct'
+  , result=90
+  , units=''
+  , text='0o0132'
+)
 
 # binary number {{{3
 binaryNumber = Number(
@@ -1175,6 +2204,12 @@ binaryNumber = Number(
         integer in base 2 (it may contain only the digits 0 or 1).  For example,
         0b1111 represents the octal number 1111 or the decimal number 15.
     """
+)
+binaryNumber.addTest(
+    stimulus='0b1111 0b0001 +'
+  , result=16
+  , units=''
+  , text='16'
 )
 
 # hexadecimal number in verilog notation {{{3
@@ -1195,6 +2230,12 @@ verilogHexadecimalNumber = Number(
         255.
     """
 )
+verilogHexadecimalNumber.addTest(
+    stimulus="'h1f 'hAC + vhex"
+  , result=203
+  , units=''
+  , text="'h00cb"
+)
 
 # decimal number in verilog notation {{{3
 verilogDecimalNumber = Number(
@@ -1207,6 +2248,12 @@ verilogDecimalNumber = Number(
         The number is pushed on the stack into the #{x} register.  #{N} is an
         integer in base 10.  For example, 'd99 represents the decimal number 99.
     """
+)
+verilogDecimalNumber.addTest(
+    stimulus="'d99 'd01 + vdec"
+  , result=100
+  , units=''
+  , text="'d0100"
 )
 
 # octal number in verilog notation {{{3
@@ -1222,6 +2269,12 @@ verilogOctalNumber = Number(
         'o77 represents the octal number 77 or the decimal number 63.
     """
 )
+verilogOctalNumber.addTest(
+    stimulus="'o77 'o33 + voct"
+  , result=90
+  , units=''
+  , text="'o0132"
+)
 
 # binary number in verilog notation {{{3
 verilogBinaryNumber = Number(
@@ -1236,6 +2289,12 @@ verilogBinaryNumber = Number(
         'b1111 represents the binary number 1111 or the decimal number 15.
     """
 )
+verilogBinaryNumber.addTest(
+    stimulus="'b1111 'b0001 +"
+  , result=16
+  , units=''
+  , text="16"
+)
 
 # Number Formats {{{2
 numberFormats = Category("Number Formats")
@@ -1243,7 +2302,8 @@ numberFormats = Category("Number Formats")
 # fixed format {{{3
 setFixedFormat = SetFormat(
     pattern=r'\Afix(\d{1,2})?\Z'
-  , action=lambda num, digits: '{0:.{prec}f}'.format(num, prec=digits)
+  #, action=lambda num, digits: '{0:.{prec}f}'.format(num, prec=digits)
+  , action=lambda num, digits: '%0.*f' % (digits, num)
   , name='fix'
   , actionTakesUnits=False
   , description="%(name)s[<#{N}>]: use fixed notation"
@@ -1253,6 +2313,30 @@ setFixedFormat = SetFormat(
         #{fix}, the number of digits to the right of the decimal point is set to
         #{N}. 
     """
+)
+setFixedFormat.addTest(
+    stimulus="1e6 fix0"
+  , result=1e6
+  , units=''
+  , text="1000000"
+)
+setFixedFormat.addTest(
+    stimulus="pi fix"
+  , result=math.pi
+  , units='rads'
+  , text="3.1416 rads"
+)
+setFixedFormat.addTest(
+    stimulus="pi fix8"
+  , result=math.pi
+  , units='rads'
+  , text="3.14159265 rads"
+)
+setFixedFormat.addTest(
+    stimulus="$100 fix2"
+  , result=100
+  , units='$'
+  , text="$100.00"
 )
 
 # engineering format {{{3
@@ -1269,6 +2353,18 @@ setEngineeringFormat = SetFormat(
         set to #{N} digits. 
     """
 )
+setEngineeringFormat.addTest(
+    stimulus="pi 1e3 * eng"
+  , result=1e3*math.pi
+  , units=''
+  , text="3.1416K"
+)
+setEngineeringFormat.addTest(
+    stimulus='pi 1e3 * "rads" eng8'
+  , result=1e3*math.pi
+  , units='rads'
+  , text="3.14159265 Krads"
+)
 
 # scientific format {{{3
 setScientificFormat = SetFormat(
@@ -1283,6 +2379,30 @@ setScientificFormat = SetFormat(
         exponent is given explicitly as an integer.  If an optional whole number
         #{N} immediately follows #{sci}, the precision is set to #{N} digits. 
     """
+)
+setScientificFormat.addTest(
+    stimulus="pi 1e3 * sci"
+  , result=1e3*math.pi
+  , units=''
+  , text="3.1416e+03"
+)
+setScientificFormat.addTest(
+    stimulus='pi 1e3 * "rads" sci8'
+  , result=1e3*math.pi
+  , units='rads'
+  , text="3.14159265e+03 rads"
+)
+setScientificFormat.addTest(
+    stimulus='1e-10 sci8'
+  , result=1e-10
+  , units=''
+  , text="1.00000000e-10"
+)
+setScientificFormat.addTest(
+    stimulus='$100 sci0'
+  , result=100
+  , units='$'
+  , text="$1e+02"
 )
 
 # hexadecimal format {{{3
@@ -1300,6 +2420,24 @@ setHexadecimalFormat = SetFormat(
         is set to #{N}. 
     """
 )
+setHexadecimalFormat.addTest(
+    stimulus="0xFF hex"
+  , result=0xFF
+  , units=''
+  , text="0x00ff"
+)
+setHexadecimalFormat.addTest(
+    stimulus="0xBEEF hex0"
+  , result=0xBEEF
+  , units=''
+  , text="0xbeef"
+)
+setHexadecimalFormat.addTest(
+    stimulus="0xDeadBeef hex8"
+  , result=0xDeadBeef
+  , units=''
+  , text="0xdeadbeef"
+)
 
 # octal format {{{3
 setOctalFormat = SetFormat(
@@ -1314,6 +2452,24 @@ setOctalFormat = SetFormat(
         optional whole number #{N} immediately follows #{oct}, the number of
         digits displayed is set to #{N}. 
     """
+)
+setOctalFormat.addTest(
+    stimulus="0o777 oct"
+  , result=0777
+  , units=''
+  , text="0o0777"
+)
+setOctalFormat.addTest(
+    stimulus="0o77 oct0"
+  , result=077
+  , units=''
+  , text="0o77"
+)
+setOctalFormat.addTest(
+    stimulus="0o76543210 oct8"
+  , result=076543210
+  , units=''
+  , text="0o76543210"
 )
 
 # binary format {{{3
@@ -1333,6 +2489,24 @@ try:
             number of digits displayed is set to #{N}. 
         """
     )
+    setBinaryFormat.addTest(
+        stimulus="0b11 bin"
+      , result=3
+      , units=''
+      , text="0b0011"
+    )
+    setBinaryFormat.addTest(
+        stimulus="0b11 bin0"
+      , result=3
+      , units=''
+      , text="0b11"
+    )
+    setBinaryFormat.addTest(
+        stimulus="0b10011001 bin8"
+      , result=153
+      , units=''
+      , text="0b10011001"
+    )
 except AttributeError:
     setBinaryFormat = None
 # verilog hexadecimal format {{{3
@@ -1350,6 +2524,24 @@ setVerilogHexadecimalFormat = SetFormat(
         digits displayed is set to #{N}. 
     """
 )
+setVerilogHexadecimalFormat.addTest(
+    stimulus="'hFF vhex"
+  , result=0xFF
+  , units=''
+  , text="'h00ff"
+)
+setVerilogHexadecimalFormat.addTest(
+    stimulus="'hBEEF vhex0"
+  , result=0xBEEF
+  , units=''
+  , text="'hbeef"
+)
+setVerilogHexadecimalFormat.addTest(
+    stimulus="'hDeadBeef vhex8"
+  , result=0xDeadBeef
+  , units=''
+  , text="'hdeadbeef"
+)
 
 # verilog decimal format {{{3
 setVerilogDecimalFormat = SetFormat(
@@ -1365,6 +2557,24 @@ setVerilogDecimalFormat = SetFormat(
         #{vdec}, the number of digits displayed is set to #{N}. 
     """
 )
+setVerilogDecimalFormat.addTest(
+    stimulus="'d99 vdec"
+  , result=99
+  , units=''
+  , text="'d0099"
+)
+setVerilogDecimalFormat.addTest(
+    stimulus="'d0 vdec0"
+  , result=0
+  , units=''
+  , text="'d0"
+)
+setVerilogDecimalFormat.addTest(
+    stimulus="'d9876543210 vdec10"
+  , result=9876543210
+  , units=''
+  , text="'d9876543210"
+)
 
 # verilog octal format {{{3
 setVerilogOctalFormat = SetFormat(
@@ -1379,6 +2589,24 @@ setVerilogOctalFormat = SetFormat(
         digits.  If an optional whole number #{N} immediately follows #{voct},
         the number of digits displayed is set to #{N}. 
     """
+)
+setVerilogOctalFormat.addTest(
+    stimulus="'o777 voct"
+  , result=0777
+  , units=''
+  , text="'o0777"
+)
+setVerilogOctalFormat.addTest(
+    stimulus="'o77 voct0"
+  , result=077
+  , units=''
+  , text="'o77"
+)
+setVerilogOctalFormat.addTest(
+    stimulus="'o76543210 voct8"
+  , result=076543210
+  , units=''
+  , text="'o76543210"
 )
 
 # verilog binary format {{{3
@@ -1398,6 +2626,24 @@ try:
             follows #{vbin}, the number of digits displayed is set to #{N}. 
         """
     )
+    setVerilogBinaryFormat.addTest(
+        stimulus="'b11 vbin"
+      , result=3
+      , units=''
+      , text="'b0011"
+    )
+    setVerilogBinaryFormat.addTest(
+        stimulus="'b11 vbin0"
+      , result=3
+      , units=''
+      , text="'b11"
+    )
+    setVerilogBinaryFormat.addTest(
+        stimulus="'b10011001 vbin8"
+      , result=153
+      , units=''
+      , text="'b10011001"
+    )
 except AttributeError:
     setVerilogBinaryFormat = None
 
@@ -1414,6 +2660,19 @@ storeToVariable = Store(
         name.
     """
 )
+storeToVariable.addTest(
+    stimulus='1MHz =freq 10us =time 2pi * * time freq *'
+  , result=10
+  , units=''
+  , text='10'
+)
+storeToVariable.addTest(
+    stimulus='1pF =c pop c'
+  , result=1e-12
+  , units='F'
+  , text='1 pF'
+  , warnings=['c: variable has overridden built-in.']
+)
 
 # recall from variable {{{3
 recallFromVariable = Recall(
@@ -1425,6 +2684,19 @@ recallFromVariable = Recall(
         register.
     """
 )
+recallFromVariable.addTest(
+    stimulus='1MHz =freq 2pi * "rads" =omega 10us =time clstack freq'
+  , result=1e6
+  , units='Hz'
+  , text='1 MHz'
+)
+recallFromVariable.addTest(
+    stimulus='freq'
+  , result=0
+  , units=''
+  , text='0'
+  , error='freq: variable does not exist'
+)
 
 # list variables {{{3
 listVariables = Command(
@@ -1434,6 +2706,17 @@ listVariables = Command(
   , summary="""
         List all defined variables and their values.
     """
+)
+listVariables.addTest(
+    stimulus='1MHz =freq 10us =time vars'
+  , result=10e-6
+  , units='s'
+  , text='10 us'
+  , messages=[
+        '  Rref: 50 Ohms'
+      , '  freq: 1 MHz'
+      , '  time: 10 us'
+    ]
 )
 
 # Stack {{{2
@@ -1449,6 +2732,12 @@ swapXandY = Command(
         The values in the #{x} and #{y} registers are swapped.
     """
 )
+swapXandY.addTest(
+    stimulus='1MHz 10us swap'
+  , result=1e6
+  , units='Hz'
+  , text='1 MHz'
+)
 
 # dup {{{3
 duplicateX = Dup(
@@ -1460,6 +2749,18 @@ duplicateX = Dup(
         The value in the #{x} register is pushed onto the stack again.
     """
   , aliases=['enter']
+)
+duplicateX.addTest(
+    stimulus='1MHz 10us dup'
+  , result=10e-6
+  , units='s'
+  , text='10 us'
+)
+duplicateX.addTest(
+    stimulus='1MHz 10us dup swap'
+  , result=10e-6
+  , units='s'
+  , text='10 us'
 )
 
 # pop {{{3
@@ -1473,6 +2774,18 @@ popX = Command(
     """
   , aliases=['clrx']
 )
+popX.addTest(
+    stimulus='1MHz 10us pop'
+  , result=1e6
+  , units='Hz'
+  , text='1 MHz'
+)
+popX.addTest(
+    stimulus='pi eps0 q pop pop pop pop'
+  , result=0
+  , units=''
+  , text='0'
+)
 
 # stack {{{3
 listStack = Command(
@@ -1483,7 +2796,20 @@ listStack = Command(
         Print all the values stored on the stack.
     """
 )
+listStack.addTest(
+    stimulus='1MHz 10us q 36 stack'
+  , result=36
+  , units=''
+  , text='36'
+  , messages=[
+        '     1 MHz'
+      , '     10 us'
+      , '  y: 160.22e-21 C'
+      , '  x: 36'
+    ]
+)
 
+# clstack {{{3
 clearStack = Command(
     'clstack'
   , lambda calc: calc.stack.clear()
@@ -1492,6 +2818,12 @@ clearStack = Command(
   , summary="""
         Remove all values from the stack.
     """
+)
+listStack.addTest(
+    stimulus='1MHz 10us clstack stack'
+  , result=0
+  , units=''
+  , text='0'
 )
 
 # Miscellaneous {{{2
@@ -1509,6 +2841,92 @@ printText = Print(
         #{Var}.
     """
 )
+printText.addTest(
+    stimulus='2 1 0 `Hello world!`'
+  , result=0
+  , units=''
+  , text='0'
+  , messages=["Hello world!"]
+)
+printText.addTest(
+    stimulus='2 1 0 `$0`'
+  , result=0
+  , units=''
+  , text='0'
+  , messages=["0"]
+)
+printText.addTest(
+    stimulus='2 1 0 `$0 is x`'
+  , result=0
+  , units=''
+  , text='0'
+  , messages=["0 is x"]
+)
+printText.addTest(
+    stimulus='2 1 0 `x is $0`'
+  , result=0
+  , units=''
+  , text='0'
+  , messages=["x is 0"]
+)
+printText.addTest(
+    stimulus='2 1 0 `x is $0, y is $1`'
+  , result=0
+  , units=''
+  , text='0'
+  , messages=["x is 0, y is 1"]
+)
+printText.addTest(
+    stimulus='2 1 0 `x is ${0}, y is ${1}`'
+  , result=0
+  , units=''
+  , text='0'
+  , messages=["x is 0, y is 1"]
+)
+printText.addTest(
+    stimulus='2 1 0 `x is $0, y is $1, z = $2`'
+  , result=0
+  , units=''
+  , text='0'
+  , messages=["x is 0, y is 1, z = 2"]
+)
+printText.addTest(
+    stimulus='2 1 0 `x is $0, y is $1, z = $2, t is $3`'
+  , result=0
+  , units=''
+  , text='0'
+  , messages=["x is 0, y is 1, z = 2, t is $?3?"]
+  , warnings=["$3: unknown."]
+)
+printText.addTest(
+    stimulus='`I have $Rref, you have $$50`'
+  , result=0
+  , units=''
+  , text='0'
+  , messages=  ["I have 50 Ohms, you have $50"]
+)
+printText.addTest(
+    stimulus='`I have ${Rref}, you have $$50`'
+  , result=0
+  , units=''
+  , text='0'
+  , messages=  ["I have 50 Ohms, you have $50"]
+)
+printText.addTest(
+    stimulus='`I have $Q, you have $$50`'
+  , result=0
+  , units=''
+  , text='0'
+  , messages=["I have $?Q?, you have $50"]
+  , warnings=["$Q: unknown."]
+)
+printText.addTest(
+    stimulus='$100 ``'
+  , result=100
+  , units='$'
+  , text='$100'
+  , messages=["$100"]
+)
 
 setUnits = SetUnits(
     name='units'
@@ -1519,11 +2937,21 @@ setUnits = SetUnits(
         The actual value is unchanged.
     """
 )
+setUnits.addTest(
+    stimulus='100M "V/s"'
+  , result=1e8
+  , units='V/s'
+  , text='100 MV/s'
+)
 
 printAbout = Command(
     'about'
   , Calculator.aboutMsg
   , description="%(key)s: print information about this calculator"
+)
+printAbout.addTest(
+    stimulus='about'
+  , messages=True
 )
 
 terminate = Command(
@@ -1538,6 +2966,10 @@ printHelp = Command(
   , Calculator.displayHelp
   , description="%(key)s: print a summary of the available features"
 )
+printHelp.addTest(
+    stimulus='help'
+  , messages=True
+)
 
 detailedHelp = Help(
     name='?'
@@ -1548,6 +2980,21 @@ detailedHelp = Help(
         If no topic is given, a list of available topics is listed.
     """
 )
+detailedHelp.addTest(
+    stimulus='?'
+  , messages=True
+)
+detailedHelp.addTest(
+    stimulus='??'
+  , messages=True
+)
+detailedHelp.addTest(
+    stimulus='?XXXXXXXXXX'
+  , messages=True
+  , warnings=['XXXXXXXXXX: not found.\n']
+)
+# The detailed help command with arguments is tested in test.ec.py.
+
 
 # Action Sublists {{{1
 # Arithmetic Operators {{{2
@@ -1576,6 +3023,7 @@ logPowerExponentialActions = [
     naturalLog,
     tenPower,
     commonLog,
+    twoPower,
     binaryLog,
     square,
     squareRoot,
@@ -1654,7 +3102,6 @@ physicsConstantActions = [
     planckConstantReduced,
     planckLength,
     planckMass,
-    planckMassReduced,
     planckTemperature,
     planckTime,
     boltzmann,
