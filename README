@@ -7,8 +7,7 @@ and uses a text-only user interface.
 
 Requires Python version 2.3.
 Be aware that some features are not available with the earlier versions of 
-Python, and furthermore, some tests will fail because those features are 
-missing. I hope to clean this situation up in a subsequent release.
+Python.
 
 More information on both ec and ec0 can be found at www.nurdletech.com/ec.html.
 
