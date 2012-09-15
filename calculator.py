@@ -13,6 +13,10 @@ engfmt.setSpacer(' ')
 from copy import copy
 from textwrap import wrap, fill, dedent
 from pydoc import pager
+
+# Set the version information {{{1
+versionNumber = '1.0.1'
+versionDate = '2012-09-14'
 import warnings
 warnings.simplefilter("ignore") # suppress deprecation warnings
 from sets import Set as set, ImmutableSet as frozenset
@@ -1546,10 +1550,13 @@ class Calculator:
         Print administrative information about EC.
         '''
         calc.printMessage(dedent("""\
+            EC: Engineering Calculator
+            Version %s (%s).
+
             EC was written by Ken Kundert.
-            Email your comments and questions to ec@shalmirane.com.
+            Email your comments and questions to ec@nurdletech.com.
             To get the source, use 'git clone git@github.com:KenKundert/ec.git'.\
-        """))
+        """ % (versionNumber, versionDate)))
 
     def quit(calc):
         '''

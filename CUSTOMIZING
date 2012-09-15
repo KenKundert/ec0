@@ -105,6 +105,13 @@ when initializing the calculator:
         used.
 In addition, there are several other variables that affect the creation of the
 man page:
+    documentIntegers: Set this to true if your list of actions includes the
+        ability to enter and display integers of various bases. It adds the
+        section on integers to the man page.
+    documentVerilogIntegers: Set this to true if your list of actions includes
+        the ability to enter and display Verilog integers of various bases. It
+        chooses the section on integers to be the one that include documentation
+        of Verilog integers to the man page.
     documentComplexNumbers: Set this to true if your list of actions includes
         the ability to create and operate on complex numbers. It adds the
         section on complex numbers to the man page.
