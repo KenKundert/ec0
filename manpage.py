@@ -201,7 +201,7 @@ ec.1 - the *roff document processor source for the ec manual
 
 Author:
 Ken Kundert
-ec@shalmirane.com .
+ec@nurdletech.com .
 
 You can view a formatted version of this man page using:
    tbl ec.1 | nroff -man | less
@@ -820,7 +820,7 @@ Paragraph('''
     Send bug reports and enhancement requests to:
 ''')
 Email('''
-    ec@shalmirane.com
+    ec@nurdletech.com
 ''')
 Section('See Also')
 Paragraph('bc, dc')
