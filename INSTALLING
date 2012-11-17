@@ -40,5 +40,19 @@ option.  That will cause EC to be installed so that it is accessible to all
 users without having to change their PATH, but it requires that you be root when 
 you run the ./install command.
 
+Older versions of Python require that you set the PYTHONPATH environment 
+variable.
+To do so, add either
+    setenv PYTHONPATH ~/.local/lib/python2.4/site-packages/
+to your .cshrc file if you use csh or tcsh, and
+    export PYTHONPATH=$HOME/.local/lib/python2.4/site-packages/
+to your .profile file if you use sh or bash. Replace 'python2.4' with your
+version of python (use 'ls ~/.local/lib' to determine your version). You will 
+then need to source this file once before you can run ec. To do so, run
+    % source .cshrc
+if you use csh or tcsh, and
+    $ . .profile
+if you use sh or bash.
+
 The functionality of ec0 will vary slightly based on the version of python you 
 are using. Older versions have less functionality.

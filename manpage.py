@@ -16,7 +16,8 @@
 # Imports {{{1
 import re
 from textwrap import wrap, fill, dedent
-from actions import actionsToUse as actions, Constant, date, version, \
+from calculator import versionDate, versionNumber
+from actions import actionsToUse as actions, Constant, \
     documentIntegers, documentVerilogIntegers, documentComplexNumbers
 
 # Globals {{{1
@@ -191,8 +192,8 @@ class Email(ManPage):
 Title(
     title='ec'
   , section='1'
-  , date=date
-  , version=version
+  , date=versionDate
+  , version=versionNumber
   , manual='Engineering Calculator'
   , preprocessors='t'
 )
