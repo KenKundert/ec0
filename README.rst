@@ -9,8 +9,8 @@ Requires Python version 2.3.
 Be aware that some features are not available with the earlier versions of 
 Python.
 
-More information on both ec and ec0 can be found at `NurdleTech                  
-<http://www.nurdletech.com/ec.html>`_.
+More information on both ec and ec0 can be found at `NurdleTech 
+<http://www.nurdletech.com/ec.html>`_ .
 
 To get the source code::
 
