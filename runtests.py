@@ -157,11 +157,10 @@ def runTests(tests, pythonCmd=None, pythonPath=None, testKey='test'):
         expected to be named ./<test>/<testKey> (notice that there is no .py
         extension even though this would also be a python file).
     """
+    if not pythonCmd:
+        pythonCmd = 'python'
     if coverage:
-        pythonCmd = 'coverage run -a --branch'
-    else:
-        if not pythonCmd:
-            pythonCmd = 'python'
+        pythonCmd = pythonCmd + ' /usr/bin/coverage run -a --branch'
     if pythonPath:
         pythonPath = ('PYTHONPATH=%s; ' % pythonPath)
     else:
