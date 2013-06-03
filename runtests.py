@@ -131,7 +131,7 @@ def writeSummary(tests, testFailures, suites = 1, suiteFailures = None):
         sys.exit(
             exception(
                 "%s: summary file '%s': %s." % (
-                    progName, summaryFileName, err.strerror
+                    progName, err.filename, err.strerror
                 )
             )
         )
