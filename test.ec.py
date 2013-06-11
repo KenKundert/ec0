@@ -77,7 +77,7 @@ for index, case in enumerate(testCases):
     expectedMessages = case.get('messages', [])
     expectedWarnings = case.get('warnings', [])
     if printTests:
-        print(status('Trying %d:' % index), stimulus)
+        print status('Trying %d:' % index), stimulus
 
     calc = Calculator(
         allActions
@@ -106,58 +106,60 @@ for index, case in enumerate(testCases):
         )
         if failure:
             failures += 1
-            print(fail('Failure detected (%s):' % failures))
-            print(info('    Given:'), stimulus)
-            print(info('    Result  :'), ', '.join([
+            print fail('Failure detected (%s):' % failures)
+            print info('    Given:'), stimulus
+            print info('    Result  :'), ', '.join([
                 str(result), calc.format((result, units)), units
-            ]))
-            print(info('    Expected:'), ', '.join([
+            ])
+            print info('    Expected:'), ', '.join([
                 str(expectedResult)
               , str(expectedFormattedResult)
               , str(expectedUnits)
-            ]))
+            ])
             if messages != expectedMessages:
                 if expectedMessages == True:
-                    print(info('    Expected message is missing.'))
+                    print info('    Expected message is missing.')
                 else:
                     for message in messages:
                         if message not in expectedMessages:
-                            print(info('    Message not expected:'), message)
+                            print info('    Message not expected:'), message
                     for message in expectedMessages:
                         if message not in messages:
-                            print(info('    Expected message not received:'), message)
+                            print info('    Expected message not received:'), message
             if warnings != expectedWarnings:
                 for warning in warnings:
                     if warning not in expectedWarnings:
-                        print(info('    Warning not expected:'), warning)
+                        print info('    Warning not expected:'), warning
                 for warning in expectedWarnings:
                     if warning not in warnings:
-                        print(info('    Expected warning not received:'), warning)
+                        print info('    Expected warning not received:'), warning
 
         elif printResults:
-            print(succeed('    Result:'), result)
+            print succeed('    Result:'), result
             for message in messages:
-                print(succeed('    Message received:'), message)
+                print succeed('    Message received:'), message
             for warning in warnings:
-                print(succeed('    Warning received:'), warning)
-    except CalculatorError as err:
+                print succeed('    Warning received:'), warning
+    except CalculatorError, err:
         calc.restoreStack()
         if expectedError != err.getMessage():
             failures += 1
-            print(fail('Failure detected (%s):' % failures))
-            print(info('    Given:'), stimulus)
-            print(info('    Result  :'), err.message)
-            print(info('    Expected:'), expectedError)
+            print fail('Failure detected (%s):' % failures)
+            print info('    Given:'), stimulus
+            print info('    Result  :'), err.message
+            print info('    Expected:'), expectedError
         elif printResults:
-            print(succeed('    Result:'), result)
+            print succeed('    Result:'), result
 
 # Print test summary {{{1
 numTests = len(testCases)
 assert testsRun == numTests
 if printSummary:
-    print('%s: %s tests run, %s failures detected.' % (
-        fail('FAIL') if failures else succeed('PASS'), testsRun, failures
-    ))
+    if failures:
+        print fail('FAIL:'),
+    else:
+        print succeed('PASS:'),
+    print '%s tests run, %s failures detected.' % (testsRun, failures)
 
 writeSummary(testsRun, failures)
 sys.exit(testsRun != numTests)
