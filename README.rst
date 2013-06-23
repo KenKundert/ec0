@@ -20,6 +20,12 @@ Once cloned, you can get the latest updates using::
 
    $ git pull
 
+Alternatively, you can download a zip file from::
+
+   https://github.com/KenKundert/ec0/archive/master.zip
+
+If you go this route, you will have to unzip the file using the unzip command.
+
 To run the regression tests::
 
    $ ./test
@@ -29,11 +35,26 @@ To install::
    $ ./install
 
 This installs *ec* in ``~/.local``. Be sure to add ``~/.local/bin`` to your 
-PATH.  
+PATH.  With early versions of python, you my see an ImportError when invoking 
+*ec*. If this is happens, you should add the site-packages directory onto your 
+python path using::
+
+   $ export PYTHONPATH=$HOME/.local/lib/python-<vers>/site-packages
+
+if you use bash as your shell, or::
+
+   > setenv PYTHONPATH ~/.local/lib/python-<vers>/site-packages
+
+if you use csh.
 
 To read the EC manual::
 
    $ man ec
+
+On earlier versions of Linux you might need to supplement your man path using::
+
+   $ export MANPATH=$HOME/.local/man:$MANPATH
+
 
 To run EC::
 
