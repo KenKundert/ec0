@@ -15,8 +15,8 @@ from textwrap import wrap, fill, dedent
 from pydoc import pager
 
 # Set the version information {{{1
-versionNumber = '1.0.1'
-versionDate = '2012-09-14'
+versionNumber = '1.0.2'
+versionDate = '2013-06-27'
 import warnings
 warnings.simplefilter("ignore") # suppress deprecation warnings
 from sets import Set as set, ImmutableSet as frozenset
@@ -169,7 +169,7 @@ class Heap:
         self
       , parent = None
       , initialState = None
-      , reserved = None
+      , reserved = []
       , removeAction = None
     ):
         """
@@ -179,7 +179,7 @@ class Heap:
         parent: the calculator (must provide the methods printMessage() and
             printWarning() that take one string and delivers it to the user).
         initialState: a dictionary of values used to initialize the heap.
-        reserved: a dictionary of named actions (individual actions are deleted
+        reserved: a list of named actions (individual actions are deleted
             if a heap value is created with the same name if *removeAction* is
             true). In this way variable names (heap values) override built-in
             command and function names.
