@@ -112,4 +112,4 @@ if printSummary:
     print '%s tests run, %s failures detected.' % (testsRun, failures)
 
 writeSummary(testsRun, failures)
-sys.exit(testsRun != numTests)
+sys.exit(int(bool(failures)))
