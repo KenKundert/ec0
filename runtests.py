@@ -41,7 +41,7 @@ try:
     from yaml import load as loadSummary, dump as dumpSummary
 except ImportError:
     from pickle import load as loadSummary, dump as dumpSummary
-from textcolors import Colors
+from textcolors import Colors, isTTY
 from cmdline import commandLineProcessor
 
 # define useful colors  {{{2
@@ -166,7 +166,7 @@ def runTests(tests, pythonCmd=None, pythonPath=None, testKey='test'):
     else:
         pythonPath = ''
 
-    colors.colorize(colorize)
+    colors.colorize(colorize and isTTY())
     global args
     if len(args) == 0:
         args = tests
