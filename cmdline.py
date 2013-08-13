@@ -171,9 +171,9 @@ class _Error(Exception):
         if clp.errorHandler:
             raise clp.errorHandler(progName, msg, clp.helpKey)
         if progName:
-	    src = '%s: ' % progName
-	else:
-	    src = ''
+            src = '%s: ' % progName
+        else:
+            src = ''
         msg = '%s%s.' % (src, msg)
         self.msg = msg
         if clp.helpKey:
@@ -312,7 +312,7 @@ class _Argument(_Generic):
         if name:
             name += ': '
         args = []
-        while len(args) < self.maxArgs or self.maxArgs == None:
+        while self.maxArgs == None or len(args) < self.maxArgs:
             # if maxArgs == None, there is no limit to the number of arguments.
 #            if len(args) < self.minArgs:
 #                # in this special case, argument may begin with a -
@@ -690,9 +690,9 @@ class CommandLineProcessor(_Argument):
                 )
 
         def printOptions(optionDefs, sort):
-	    options = optionDefs
+            options = optionDefs
             if sort:
-	        options.sort()
+                options.sort()
             for key, opt in options:
                 # skip hidden options (those that do not have summaries)
                 if not opt.sum:
@@ -765,7 +765,7 @@ class CommandLineProcessor(_Argument):
 
             if len(self.commandDefs) > 0:
                 print "\nCommands:"
-		commandNames = self.commandNames
+                commandNames = self.commandNames
                 if sort:
                     #commandNames = sorted(self.commandNames)
                     commandNames.sort()
@@ -908,12 +908,12 @@ class Command(_Argument):
     # a command has been found
     def _processCommand(self, clp, name):
         self.optionsGiven = {}
-	try:
-	    for prereq in self.prereqs:
-		if prereq not in clp.prereqs:
-		    clp.prereqs.append(prereq)
-	except:
-	    sys.exit(1)
+        try:
+            for prereq in self.prereqs:
+                if prereq not in clp.prereqs:
+                    clp.prereqs.append(prereq)
+        except:
+            sys.exit(1)
 
         # first, process any options to this command
         while clp._nextTokenIsOpt() and not clp._nextTokenIsEmpty():
