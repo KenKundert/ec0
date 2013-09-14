@@ -176,7 +176,7 @@ if (interactiveSession):
             entered = raw_input('%s: ' % highlight(prompt))
         except (EOFError, KeyboardInterrupt):
             print
-            sys.exit(1)
+            sys.exit(0)
         prompt = evaluateLine(calc, entered, prompt)
 elif printXuponTermination:
     print prompt

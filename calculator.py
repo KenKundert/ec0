@@ -1560,6 +1560,6 @@ class Calculator:
 
     def quit(calc):
         '''
-        Quit about EC.
+        Quit EC.
         '''
-        exit()
+        sys.exit(0)
