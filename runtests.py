@@ -187,12 +187,7 @@ def runTests(tests, pythonCmd=None, pythonPath=None, testKey='test'):
             name = '%s/%s' % (parent, test)
         else:
             name = test
-        if os.path.isdir(test):
-            summaryFileName = './%s/.%s.sum' % (test, testKey)
-            _deleteYamlFile(summaryFileName)
-            cmd = 'cd %s; ./%s %s' % (test, testKey, _childOpts(test))
-            error = _invoke(cmd)
-        elif os.path.isfile('%s.%s.py' % (testKey, test)):
+        if os.path.isfile('%s.%s.py' % (testKey, test)):
             summaryFileName = './.%s.%s.sum' % (testKey, test)
             _deleteYamlFile(summaryFileName)
             if printSummary:
@@ -201,6 +196,11 @@ def runTests(tests, pythonCmd=None, pythonPath=None, testKey='test'):
             cmd = pythonPath + '%s %s.%s.py %s' % (
                 pythonCmd, testKey, test, _childOpts(test)
             )
+            error = _invoke(cmd)
+        elif os.path.isdir(test):
+            summaryFileName = './%s/.%s.sum' % (test, testKey)
+            _deleteYamlFile(summaryFileName)
+            cmd = 'cd %s; ./%s %s' % (test, testKey, _childOpts(test))
             error = _invoke(cmd)
         else:
             print(exception(
